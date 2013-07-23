@@ -1,0 +1,6 @@
+*.pyc
+*.un~
+.swp
+links.db
+settings.py
+env/
