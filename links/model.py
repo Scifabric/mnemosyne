@@ -13,6 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
 from core import db
+import datetime
 
 
 class Link(db.Model):
@@ -24,3 +25,21 @@ class Link(db.Model):
 
     def __repr__(self):
         return '<Link %r>' % self.url
+
+
+class Throttle(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # Request IP: origin of the API request
+    ip = db.Column(db.Text, unique=True)
+    # Number of times that the IP has hitten the API
+    hits = db.Column(db.Integer)
+    # DateTime of last hit
+    date = db.Column(db.DateTime)
+
+    def __init__(self, ip, hits):
+        self.ip = ip
+        self.hits = hits
+        self.date = datetime.datetime.utcnow()
+
+    def __repr__(self):
+        return '<Throttle %r:%r>' % (self.ip, self.hits)
