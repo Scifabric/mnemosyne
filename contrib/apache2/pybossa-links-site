@@ -1,0 +1,14 @@
+<VirtualHost *:80>
+    ServerName example.com
+
+    DocumentRoot /home/user/pybossa-links
+    WSGIDaemonProcess pybossa user=user1 group=group1 threads=5
+    WSGIScriptAlias / /home/user/pybossa-links/contrib/pybossa-links.wsgi
+
+    <Directory /home/user/pybossa-links>
+        WSGIProcessGroup pybossa-links
+        WSGIApplicationGroup %{GLOBAL}
+        Order deny,allow
+        Allow from all
+    </Directory>
+</VirtualHost>

@@ -1,6 +1,7 @@
 *.pyc
 *.un~
-.swp
+*.swp
+*.wsgi
 links.db
 settings.py
 env/
