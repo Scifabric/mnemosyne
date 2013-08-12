@@ -16,12 +16,38 @@ from core import db
 import datetime
 
 
+class Project(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(255), unique=True)
+    slug = db.Column(db.String(50), unique=True)
+    pb_app_short_name = db.Column(db.String(255), unique=True)
+    keywords = db.Column(db.Text)
+    created = db.Column(db.DateTime)
+
+    # Relations: one to many
+    links = db.relationship('Link', backref='project', lazy='dynamic')
+
+    def __init__(self, name, slug, pb_app_short_name, keywords):
+        self.name = name
+        self.slug = slug
+        self.pb_app_short_name = pb_app_short_name
+        self.keywords = keywords
+        self.created = datetime.datetime.utcnow()
+
+    def __repr__(self):
+        return '<Project %r:%r>' % (self.slug, self.id)
+
+
 class Link(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.Text, unique=True)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
+    created = db.Column(db.DateTime)
 
-    def __init__(self, url):
+    def __init__(self, url, project_id):
         self.url = url
+        self.project_id = project_id
+        self.created = datetime.datetime.utcnow()
 
     def __repr__(self):
         return '<Link %r>' % self.url
