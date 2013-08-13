@@ -16,7 +16,23 @@ from core import db
 import datetime
 
 
-class Project(db.Model):
+class DomainObject(object):
+    def dictize(self):
+        tmp = {}
+        for col in self.__table__.c:
+            if col.name == 'created':
+                tmp[col.name] = getattr(self, col.name).isoformat()
+            elif col.name == 'keywords':
+                tmp[col.name] = [k.strip() for k in getattr(self, col.name).split(",")]
+            else:
+                tmp[col.name] = getattr(self, col.name)
+        return tmp
+
+    def undictize(self):
+        raise NotImplementedError()
+
+
+class Project(db.Model, DomainObject):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
     slug = db.Column(db.String(50), unique=True)
@@ -38,7 +54,7 @@ class Project(db.Model):
         return '<Project %r:%r>' % (self.slug, self.id)
 
 
-class Link(db.Model):
+class Link(db.Model, DomainObject):
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.Text, unique=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
@@ -53,7 +69,7 @@ class Link(db.Model):
         return '<Link %r>' % self.url
 
 
-class Throttle(db.Model):
+class Throttle(db.Model, DomainObject):
     id = db.Column(db.Integer, primary_key=True)
     # Request IP: origin of the API request
     ip = db.Column(db.Text, unique=True)
