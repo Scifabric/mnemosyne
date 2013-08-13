@@ -44,6 +44,6 @@ if __name__ == "__main__":
     project = Project(name=options.project_name,
                       slug=options.project_slug,
                       pb_app_short_name=options.pb_app_short_name,
-                      keywords=options.project_keywords)
+                      keywords=options.project_keywords.strip())
     db.session.add(project)
     db.session.commit()
