@@ -14,7 +14,7 @@
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
 
 import json
-from flask import request, Response, abort
+from flask import request, Response
 from core import app, db
 from utils import allow_post, valid_link_url
 from model import Project, Link
@@ -78,31 +78,31 @@ def save_url():
                                url=link.url,
                                new=True,
                                status="success")
-                return Response(json.dumps(success), 200)
+                return Response(json.dumps(success), mimetype="application/json",
+                                status=200)
             else:
                 link = res
                 success = dict(id=link.id,
                                url=link.url,
                                new=False,
                                status="success")
-                return Response(json.dumps(success), 200)
+                return Response(json.dumps(success), mimetype="application/json",
+                                status=200)
         else:
             return handle_error('rate_limit')
 
 
 @app.route('/project/')
-def projects():
+def project():
     if (request.args.get('slug')):
-        project = Project.query.filter_by(slug=request.args.get('slug')).first()
-        if project:
-            links = Link.query.filter_by(project_id=project.id).count()
-            return ("Project %s has %s stored links for the following keywords: %s"
-                    % (project.name, links, project.keywords))
-        else:
-            return abort(404)
+        project = Project.query.filter_by(slug=request.args.get('slug')).first_or_404()
+        return Response(json.dumps(project.dictize()), mimetype="application/json",
+                        status=200)
     else:
-        projects = Project.query.count()
-        return "There are %s registered projects" % projects
+        projects = Project.query.all()
+        return Response(json.dumps([p.dictize() for p in projects]),
+                        mimetype='application/json',
+                        status=200)
 
 
 if __name__ == "__main__":
