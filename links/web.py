@@ -16,7 +16,7 @@
 import json
 from flask import request, Response
 from core import app, db
-from utils import allow_post, valid_link_url
+from utils import allow_post, valid_link_url, crossdomain
 from model import Project, Link
 
 
@@ -41,10 +41,12 @@ def handle_error(error_type):
     if error_type == 'server_error':
         error['error'] = 'Server Error'
         status_code = 500
+    print json.dumps(error)
     return Response(json.dumps(error), status_code)
 
 
 @app.route("/", methods=['GET', 'POST'])
+@crossdomain(origin='*')
 def save_url():
     if request.method == 'GET':
         links = Link.query.all()
@@ -93,6 +95,7 @@ def save_url():
 
 
 @app.route('/project/')
+@crossdomain(origin='*')
 def project():
     if (request.args.get('slug')):
         project = Project.query.filter_by(slug=request.args.get('slug')).first_or_404()
@@ -106,4 +109,4 @@ def project():
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host=app.config.get('HOST'))
