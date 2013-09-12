@@ -53,7 +53,7 @@ def save_url():
         projects = Project.query.all()
         return "There are %s stored URLs and %s projects" % (len(links), len(projects))
     else:
-        # Check first if the user is allowed to post or he has reached the rate limit
+        # Check first if the user is allowed to post or if the user has reached the rate limit
         if allow_post(db=db, ip=request.remote_addr,
                       hour=app.config.get('HOUR'),
                       max_hits=app.config.get('MAX_HITS')):
