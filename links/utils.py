@@ -17,7 +17,10 @@ from datetime import timedelta
 from flask import make_response, request, current_app
 from functools import update_wrapper
 from model import Project, Throttle
+from StringIO import StringIO
 import datetime
+import requests
+import exifread
 from urlparse import urlparse
 
 
@@ -117,3 +120,16 @@ def project_or_404(slug):
         return project
     else:
         return False
+
+
+def get_exif(url):
+    """Return a dictionary with the EXIF data of the image"""
+    r = requests.get(url)
+    img = StringIO(r.content)
+    exif = exifread.process_file(img, details=False)
+    tags = {}
+    for k in exif.keys():
+        if (('Image' in k) or ('EXIF' in k) or ('GPS' in k)):
+            tags[k] = exif[k].printable
+    print tags
+    return tags

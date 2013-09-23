@@ -59,6 +59,7 @@ class Link(db.Model, DomainObject):
     url = db.Column(db.Text, unique=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
     created = db.Column(db.DateTime)
+    exif = db.Column(db.Text)
 
     def __init__(self, url, project_id):
         self.url = url

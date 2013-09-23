@@ -16,7 +16,7 @@
 import json
 from flask import request, Response
 from core import app, db
-from utils import allow_post, valid_link_url, crossdomain
+from utils import allow_post, valid_link_url, crossdomain, get_exif
 from model import Project, Link
 
 
@@ -74,6 +74,8 @@ def save_url():
             # We have a valid link, now check if this url has been already reported
             res = Link.query.filter_by(url=link.url).first()
             if res is None:
+                # Extract EXIF and save it as JSON
+                link.exif = json.dumps(get_exif(link.url))
                 db.session.add(link)
                 db.session.commit()
                 success = dict(id=link.id,
