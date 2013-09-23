@@ -127,9 +127,9 @@ def get_exif(url):
     r = requests.get(url)
     img = StringIO(r.content)
     exif = exifread.process_file(img, details=False)
+    img.close()
     tags = {}
     for k in exif.keys():
         if (('Image' in k) or ('EXIF' in k) or ('GPS' in k)):
             tags[k] = exif[k].printable
-    print tags
     return tags
