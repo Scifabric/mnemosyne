@@ -2,3 +2,4 @@ Flask
 Flask-Sqlalchemy
 requests
 exifread
+rq

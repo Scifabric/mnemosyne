@@ -14,8 +14,12 @@
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
+from redis import Redis
+from rq import Queue
 import settings
 
 app = Flask(__name__)
 app.config.from_object(settings)
 db = SQLAlchemy(app)
+# Create the Queue
+q = Queue(connection=Redis())

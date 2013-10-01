@@ -14,13 +14,15 @@
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
 
 from datetime import timedelta
-from flask import make_response, request, current_app
+from flask import make_response, request, current_app, Response
+from core import db, q
 from functools import update_wrapper
-from model import Project, Throttle
+from model import Project, Throttle, Link
 from StringIO import StringIO
 import datetime
 import requests
 import exifread
+import json
 from urlparse import urlparse
 
 
@@ -122,9 +124,77 @@ def project_or_404(slug):
         return False
 
 
-def get_exif(url):
+def handle_error(error_type):
+    """Return a Response with the error"""
+    error = dict(status='failed',
+                 error='Something went wrong, sorry!')
+    status_code = 415
+    if error_type == 'invalid_url':
+        error['error'] = 'Invalid URL'
+    if error_type == 'url_missing':
+        error['error'] = 'url arg is missing'
+    if error_type == 'too_many_args':
+        error['error'] = 'Too many arguments. url and project_slug are the only allowed arguments'
+    if error_type == 'rate_limit':
+        error['error'] = 'Rate limit reached'
+    if error_type == 'project_slug_missing':
+        error['error'] = 'Project slug arg is missing'
+    if error_type == 'project_not_found':
+        error['error'] = 'Project not found'
+        status_code = 404
+    if error_type == 'server_error':
+        error['error'] = 'Server Error'
+        status_code = 500
+    print json.dumps(error)
+    return Response(json.dumps(error), status_code)
+
+
+def save_url(ip, form):
+        if allow_post(db=db, ip=ip,
+                      hour=current_app.config.get('HOUR'),
+                      max_hits=current_app.config.get('MAX_HITS')):
+
+            if not form.get('url'):
+                return handle_error('url_missing')
+            if not form.get('project_slug'):
+                return handle_error('project_slug_missing')
+            if len(form.keys()) > 2:
+                return handle_error('too_many_args')
+            # First get the project
+            project = Project.query.filter_by(slug=form.get('project_slug')).first()
+            if project is None:
+                return handle_error('project_not_found')
+            if not valid_link_url(form['url']):
+                return handle_error('invalid_url')
+            link = Link(url=form['url'], project_id=project.id)
+            # We have a valid link, now check if this url has been already reported
+            res = Link.query.filter_by(url=link.url).first()
+            if res is None:
+                db.session.add(link)
+                db.session.commit()
+                success = dict(id=link.id,
+                               url=link.url,
+                               new=True,
+                               status="success")
+                # Enqueue Extraction of EXIF data
+                q.enqueue('links.utils.get_exif', link.id, link.url)
+                return Response(json.dumps(success), mimetype="application/json",
+                                status=200)
+            else:
+                link = res
+                success = dict(id=link.id,
+                               url=link.url,
+                               new=False,
+                               status="success")
+                return Response(json.dumps(success), mimetype="application/json",
+                                status=200)
+        else:
+            return handle_error('rate_limit')
+
+
+def get_exif(link_id, link_url):
     """Return a dictionary with the EXIF data of the image"""
-    r = requests.get(url)
+    r = requests.get(link_url)
     img = StringIO(r.content)
     exif = exifread.process_file(img, details=False)
     img.close()
@@ -132,4 +202,7 @@ def get_exif(url):
     for k in exif.keys():
         if (('Image' in k) or ('EXIF' in k) or ('GPS' in k)):
             tags[k] = exif[k].printable
-    return tags
+    update_link = db.session.query(Link).get(link_id)
+    update_link.exif = json.dumps(tags)
+    db.session.commit()
+    return update_link.exif

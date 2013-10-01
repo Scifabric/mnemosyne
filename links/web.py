@@ -15,85 +15,21 @@
 
 import json
 from flask import request, Response
-from core import app, db
-from utils import allow_post, valid_link_url, crossdomain, get_exif
+from core import app
+from utils import crossdomain, save_url
 from model import Project, Link
-
-
-def handle_error(error_type):
-    """Return a Response with the error"""
-    error = dict(status='failed',
-                 error='Something went wrong, sorry!')
-    status_code = 415
-    if error_type == 'invalid_url':
-        error['error'] = 'Invalid URL'
-    if error_type == 'url_missing':
-        error['error'] = 'url arg is missing'
-    if error_type == 'too_many_args':
-        error['error'] = 'Too many arguments. url and project_slug are the only allowed arguments'
-    if error_type == 'rate_limit':
-        error['error'] = 'Rate limit reached'
-    if error_type == 'project_slug_missing':
-        error['error'] = 'Project slug arg is missing'
-    if error_type == 'project_not_found':
-        error['error'] = 'Project not found'
-        status_code = 404
-    if error_type == 'server_error':
-        error['error'] = 'Server Error'
-        status_code = 500
-    print json.dumps(error)
-    return Response(json.dumps(error), status_code)
 
 
 @app.route("/", methods=['GET', 'POST'])
 @crossdomain(origin='*')
-def save_url():
+def index():
     if request.method == 'GET':
         links = Link.query.all()
         projects = Project.query.all()
         return "There are %s stored URLs and %s projects" % (len(links), len(projects))
     else:
         # Check first if the user is allowed to post or if the user has reached the rate limit
-        if allow_post(db=db, ip=request.remote_addr,
-                      hour=app.config.get('HOUR'),
-                      max_hits=app.config.get('MAX_HITS')):
-
-            if not request.form.get('url'):
-                return handle_error('url_missing')
-            if not request.form.get('project_slug'):
-                return handle_error('project_slug_missing')
-            if len(request.form.keys()) > 2:
-                return handle_error('too_many_args')
-            # First get the project
-            project = Project.query.filter_by(slug=request.form.get('project_slug')).first()
-            if project is None:
-                return handle_error('project_not_found')
-            if not valid_link_url(request.form['url']):
-                return handle_error('invalid_url')
-            link = Link(url=request.form['url'], project_id=project.id)
-            # We have a valid link, now check if this url has been already reported
-            res = Link.query.filter_by(url=link.url).first()
-            if res is None:
-                # Extract EXIF and save it as JSON
-                link.exif = json.dumps(get_exif(link.url))
-                db.session.add(link)
-                db.session.commit()
-                success = dict(id=link.id,
-                               url=link.url,
-                               new=True,
-                               status="success")
-                return Response(json.dumps(success), mimetype="application/json",
-                                status=200)
-            else:
-                link = res
-                success = dict(id=link.id,
-                               url=link.url,
-                               new=False,
-                               status="success")
-                return Response(json.dumps(success), mimetype="application/json",
-                                status=200)
-        else:
-            return handle_error('rate_limit')
+        return save_url(request.remote_addr, request.form)
 
 
 @app.route('/project/')
