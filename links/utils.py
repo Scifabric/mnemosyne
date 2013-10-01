@@ -23,6 +23,7 @@ import datetime
 import requests
 import exifread
 import json
+import pbclient
 from urlparse import urlparse
 
 
@@ -149,7 +150,7 @@ def handle_error(error_type):
     return Response(json.dumps(error), status_code)
 
 
-def save_url(ip, form):
+def save_url(ip, form, pybossa):
         if allow_post(db=db, ip=ip,
                       hour=current_app.config.get('HOUR'),
                       max_hits=current_app.config.get('MAX_HITS')):
@@ -177,7 +178,10 @@ def save_url(ip, form):
                                new=True,
                                status="success")
                 # Enqueue Extraction of EXIF data
-                q.enqueue('links.utils.get_exif', link.id, link.url)
+                exif_job = q.enqueue('links.utils.get_exif', link.id, link.url)
+                # Enqueue the creation of the PyBossa task for this link
+                q.enqueue('links.utils.create_pybossa_task',
+                          link.id, link.project.pb_app_short_name, pybossa)
                 return Response(json.dumps(success), mimetype="application/json",
                                 status=200)
             else:
@@ -202,7 +206,26 @@ def get_exif(link_id, link_url):
     for k in exif.keys():
         if (('Image' in k) or ('EXIF' in k) or ('GPS' in k)):
             tags[k] = exif[k].printable
-    update_link = db.session.query(Link).get(link_id)
-    update_link.exif = json.dumps(tags)
+    updated_link = db.session.query(Link).get(link_id)
+    updated_link.exif = json.dumps(tags)
     db.session.commit()
-    return update_link.exif
+    return updated_link.exif
+
+
+def create_pybossa_task(link_id, app_short_name, pybossa):
+    """Create a PyBossa tasks for a given app_short_name"""
+    pbclient.set('endpoint', pybossa.get('endpoint'))
+    pbclient.set('api_key', pybossa.get('api_key'))
+    data = pbclient.find_app(short_name=app_short_name)
+    if type(data) == list:
+        app = data[0]
+        link = db.session.query(Link).get(link_id)
+        task_info = dict(id=link.id,
+                         url=link.url,
+                         project_id=link.project_id,
+                         created=link.created.isoformat(),
+                         exif=json.loads(link.exif))
+        task = pbclient.create_task(app_id=app.id, info=task_info)
+        return task
+    else:
+        return "PyBossa App %s not found" % app_short_name

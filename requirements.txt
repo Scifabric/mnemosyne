@@ -3,3 +3,4 @@ Flask-Sqlalchemy
 requests
 exifread
 rq
+pybossa-client

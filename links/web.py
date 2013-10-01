@@ -29,7 +29,9 @@ def index():
         return "There are %s stored URLs and %s projects" % (len(links), len(projects))
     else:
         # Check first if the user is allowed to post or if the user has reached the rate limit
-        return save_url(request.remote_addr, request.form)
+        pybossa = dict(endpoint=app.config.get('PYBOSSA_ENDPOINT'),
+                       api_key=app.config.get('PYBOSSA_API_KEY'))
+        return save_url(request.remote_addr, request.form, pybossa)
 
 
 @app.route('/project/')
