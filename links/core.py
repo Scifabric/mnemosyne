@@ -22,4 +22,5 @@ app = Flask(__name__)
 app.config.from_object(settings)
 db = SQLAlchemy(app)
 # Create the Queue
-q = Queue(connection=Redis())
+q_image = Queue('image', connection=Redis())
+q_pybossa = Queue('pybossa', connection=Redis())

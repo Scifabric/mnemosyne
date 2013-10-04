@@ -15,7 +15,7 @@
 
 from datetime import timedelta
 from flask import make_response, request, current_app, Response
-from core import db, q
+from core import db, q_image, q_pybossa
 from functools import update_wrapper
 from model import Project, Throttle, Link
 from StringIO import StringIO
@@ -171,17 +171,17 @@ def save_url(ip, form, pybossa):
             # We have a valid link, now check if this url has been already reported
             res = Link.query.filter_by(url=link.url).first()
             if res is None:
+                link.status = "saved"
                 db.session.add(link)
                 db.session.commit()
                 success = dict(id=link.id,
                                url=link.url,
                                new=True,
-                               status="success")
+                               status=link.status)
                 # Enqueue Extraction of EXIF data
-                exif_job = q.enqueue('links.utils.get_exif', link.id, link.url)
-                # Enqueue the creation of the PyBossa task for this link
-                q.enqueue('links.utils.create_pybossa_task',
-                          link.id, link.project.pb_app_short_name, pybossa)
+                q_image.enqueue('links.utils.get_exif',
+                                link.dictize(), link.project.dictize(),
+                                pybossa)
                 return Response(json.dumps(success), mimetype="application/json",
                                 status=200)
             else:
@@ -189,16 +189,16 @@ def save_url(ip, form, pybossa):
                 success = dict(id=link.id,
                                url=link.url,
                                new=False,
-                               status="success")
+                               status=link.status)
                 return Response(json.dumps(success), mimetype="application/json",
                                 status=200)
         else:
             return handle_error('rate_limit')
 
 
-def get_exif(link_id, link_url):
+def get_exif(link, project, pybossa):
     """Return a dictionary with the EXIF data of the image"""
-    r = requests.get(link_url)
+    r = requests.get(link['url'])
     img = StringIO(r.content)
     exif = exifread.process_file(img, details=False)
     img.close()
@@ -206,9 +206,13 @@ def get_exif(link_id, link_url):
     for k in exif.keys():
         if (('Image' in k) or ('EXIF' in k) or ('GPS' in k)):
             tags[k] = exif[k].printable
-    updated_link = db.session.query(Link).get(link_id)
+    updated_link = db.session.query(Link).get(link['id'])
     updated_link.exif = json.dumps(tags)
+    updated_link.status = "img_processed"
     db.session.commit()
+    # Enqueue the creation of the PyBossa task for this link
+    q_pybossa.enqueue('links.utils.create_pybossa_task',
+                      link['id'], project['pb_app_short_name'], pybossa)
     return updated_link.exif
 
 
@@ -226,6 +230,14 @@ def create_pybossa_task(link_id, app_short_name, pybossa):
                          created=link.created.isoformat(),
                          exif=json.loads(link.exif))
         task = pbclient.create_task(app_id=app.id, info=task_info)
-        return task
+        if task.id:
+            link.status = 'pybossa_task_created'
+            link.pybossa_task_id = task.id
+            db.session.commit()
+            return task
+        else:
+            link.status = 'pybossa_task_failed'
+            db.session.commit()
+            raise Exception
     else:
         return "PyBossa App %s not found" % app_short_name
