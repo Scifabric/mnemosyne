@@ -60,6 +60,8 @@ class Link(db.Model, DomainObject):
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
     created = db.Column(db.DateTime)
     exif = db.Column(db.Text)
+    status = db.Column(db.Text)
+    pybossa_task_id = db.Column(db.Integer)
 
     def __init__(self, url, project_id):
         self.url = url
