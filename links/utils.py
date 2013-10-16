@@ -123,18 +123,23 @@ def allow_post(db, ip, hour=None, max_hits=None):
 def handle_error(error_type):
     """Return a Response with the error"""
     error = dict(status='failed',
-                 error='Something went wrong, sorry!')
-    status_code = 415
+                 error='Server Error')
+    status_code = 500
     if error_type == 'invalid_url':
         error['error'] = 'Invalid URL'
+        status_code = 415
     if error_type == 'url_missing':
         error['error'] = 'url arg is missing'
+        status_code = 415
     if error_type == 'too_many_args':
         error['error'] = 'Too many arguments. url and project_slug are the only allowed arguments'
+        status_code = 415
     if error_type == 'rate_limit':
         error['error'] = 'Rate limit reached'
+        status_code = 415
     if error_type == 'project_slug_missing':
         error['error'] = 'Project slug arg is missing'
+        status_code = 415
     if error_type == 'project_not_found':
         error['error'] = 'Project not found'
         status_code = 404
