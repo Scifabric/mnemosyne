@@ -75,7 +75,12 @@ class TestUtils(Test):
 
     def test_validate_post_args(self):
         """Test validate_post_args method"""
-        form = dict(url='http://algo', project_slug='slug')
+        form = dict(url='http://algo', project_slug='slug', extra='extra')
+        res = utils.validate_post_args(form)
+        output = json.loads(res.response[0])
+        assert output['error'] == 'Too many arguments. url and project_slug are the only allowed arguments', output
+
+        form.pop('extra')
         assert utils.validate_post_args(form) is None, "There should not be an error"
 
         form = dict(project_slug='slug')
