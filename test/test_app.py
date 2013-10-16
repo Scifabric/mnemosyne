@@ -19,7 +19,7 @@ from base import Test, db
 from links import model
 
 
-class TestPyBossaLinksLink(Test):
+class TestLinks(Test):
     def test_GET_index(self):
         """Test GET INDEX web page"""
         # With nothing on the DB
@@ -36,3 +36,5 @@ class TestPyBossaLinksLink(Test):
         err_msg = "There should be %s stored URLs and %s projects" % (n_links,
                                                                       n_projects)
         assert msg == res.data, err_msg
+
+
