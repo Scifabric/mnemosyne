@@ -1,4 +1,6 @@
-# This file is part of PyBossa-links.
+# This file is part of PyBossa-links
+#
+# Copyright (C) 2013 Daniel Lombraña González
 #
 # PyBossa-links is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
@@ -12,7 +14,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
-import links.model as model
 from links.core import db
 
 db.create_all()

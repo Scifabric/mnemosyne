@@ -1,5 +1,7 @@
 # This file is part of PyBossa-links.
 #
+# Copyright (C) 2013 Daniel Lombraña González
+
 # PyBossa-links is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
