@@ -31,9 +31,6 @@ class DomainObject(object):
                 tmp[col.name] = getattr(self, col.name)
         return tmp
 
-    def undictize(self):
-        raise NotImplementedError()
-
 
 class Project(db.Model, DomainObject):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,7 +50,7 @@ class Project(db.Model, DomainObject):
         self.keywords = keywords
         self.created = datetime.datetime.utcnow()
 
-    def __repr__(self):
+    def __repr__(self):    # pragma: no cover
         return '<Project %r:%r>' % (self.slug, self.id)
 
 
@@ -71,7 +68,7 @@ class Link(db.Model, DomainObject):
         self.project_id = project_id
         self.created = datetime.datetime.utcnow()
 
-    def __repr__(self):
+    def __repr__(self):    # pragma: no cover
         return '<Link %r>' % self.url
 
 
@@ -89,5 +86,5 @@ class Throttle(db.Model, DomainObject):
         self.hits = hits
         self.date = datetime.datetime.utcnow()
 
-    def __repr__(self):
+    def __repr__(self):    # pragma: no cover
         return '<Throttle %r:%r>' % (self.ip, self.hits)

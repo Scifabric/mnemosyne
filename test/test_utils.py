@@ -163,3 +163,10 @@ class TestUtils(Test):
         MockApp.return_value = PseudoRequest(text=json.dumps([]), status_code=200, headers={'content-type': 'application-json'})
         output = utils.create_pybossa_task(1, short_name, pybossa)
         assert output == "PyBossa App %s not found" % short_name
+
+        task_error = dict(action="post", status="failed")
+        MockApp.return_value = PseudoRequest(text=json.dumps([app]), status_code=200, headers={'content-type': 'application-json'})
+        MockTask.return_value = PseudoRequest(text=json.dumps(task_error), status_code=415, headers={'content-type': 'application-json'})
+        output = utils.create_pybossa_task(1, short_name, pybossa)
+        assert output['status'] == task_error['status'], output
+        assert output['action'] == task_error['action'], output

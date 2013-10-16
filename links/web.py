@@ -52,5 +52,5 @@ def project():
                         status=200)
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  # pragma: no cover
     app.run(host=app.config.get('HOST'))

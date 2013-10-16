@@ -33,7 +33,7 @@ from urlparse import urlparse
 # Based on http://flask.pocoo.org/snippets/56/
 def crossdomain(origin=None, methods=None, headers=None,
                 max_age=21600, attach_to_all=True,
-                automatic_options=True):
+                automatic_options=True):    # pragma: no cover
     if methods is not None:
         methods = ', '.join(sorted(x.upper() for x in methods))
     if headers is not None and not isinstance(headers, basestring):
@@ -90,10 +90,10 @@ def allow_post(db, ip, hour=None, max_hits=None):
         now = datetime.datetime.utcnow()
         diff = now - t.date
 
-        if hour is None:
+        if hour is None:    # pragma: no cover
             hour = 1 * 60 * 60
 
-        if max_hits is None:
+        if max_hits is None:   # pragma: no cover
             max_hits = 250
         # if the IP has done a POST in the last hour, check the number of allowed hits
         if (diff.total_seconds() < (hour)):
@@ -223,7 +223,6 @@ def create_pybossa_task(link_id, app_short_name, pybossa):
     data = pbclient.find_app(short_name=app_short_name)
     if type(data) == list and len(data) > 0:
         app = data[0]
-        print app
         link = db.session.query(Link).get(link_id)
         if link.exif is None:
             link.exif = "{}"
@@ -233,7 +232,7 @@ def create_pybossa_task(link_id, app_short_name, pybossa):
                          created=link.created.isoformat(),
                          exif=json.loads(link.exif))
         task = pbclient.create_task(app_id=app.id, info=task_info)
-        if task.id:
+        if type(task) != dict and task.id:
             link.status = 'pybossa_task_created'
             link.pybossa_task_id = task.id
             db.session.commit()
@@ -241,6 +240,6 @@ def create_pybossa_task(link_id, app_short_name, pybossa):
         else:
             link.status = 'pybossa_task_failed'
             db.session.commit()
-            raise Exception
+            return task
     else:
         return "PyBossa App %s not found" % app_short_name
