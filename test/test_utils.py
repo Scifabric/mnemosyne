@@ -54,4 +54,3 @@ class TestUtils(Test):
         for i in range(0, 5):
             err_msg = "%s st POST should NOT be allowed" % i
             assert utils.allow_post(db, ip, hour=10, max_hits=5) is False, err_msg
-
