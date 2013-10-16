@@ -64,7 +64,8 @@ class TestUtils(Test):
                   ('rate_limit', 'Rate limit reached', 415),
                   ('project_slug_missing', 'Project slug arg is missing', 415),
                   ('project_not_found', 'Project not found', 404),
-                  ('server_error', 'Server Error', 500)]
+                  ('server_error', 'Server Error', 500),
+                  ('unknown', 'Server Error', 500)]
         for e in errors:
             res = utils.handle_error(e[0])
             err = json.loads(res.response[0])
