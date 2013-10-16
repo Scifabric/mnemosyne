@@ -120,15 +120,6 @@ def allow_post(db, ip, hour=None, max_hits=None):
         return True
 
 
-def project_or_404(slug):
-    """Return True if project exists, otherwise False"""
-    project = Project.query.filter_by(slug=slug).first()
-    if project is not None:
-        return project
-    else:
-        return False
-
-
 def handle_error(error_type):
     """Return a Response with the error"""
     error = dict(status='failed',
