@@ -149,17 +149,18 @@ def handle_error(error_type):
     return Response(json.dumps(error), status_code)
 
 
-def save_url(ip, form, pybossa):
-        if allow_post(db=db, ip=ip,
-                      hour=current_app.config.get('HOUR'),
-                      max_hits=current_app.config.get('MAX_HITS')):
+def validate_post_args(form):
+    if not form.get('url'):
+        return handle_error('url_missing')
+    if not form.get('project_slug'):
+        return handle_error('project_slug_missing')
+    if len(form.keys()) > 2:
+        return handle_error('too_many_args')
 
-            if not form.get('url'):
-                return handle_error('url_missing')
-            if not form.get('project_slug'):
-                return handle_error('project_slug_missing')
-            if len(form.keys()) > 2:
-                return handle_error('too_many_args')
+
+def save_url(ip, form, pybossa, hour, max_hits):
+        if allow_post(db=db, ip=ip, hour=hour, max_hits=max_hits):
+            validate_post_args(form)
             # First get the project
             project = Project.query.filter_by(slug=form.get('project_slug')).first()
             if project is None:

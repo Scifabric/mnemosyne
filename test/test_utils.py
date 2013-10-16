@@ -17,7 +17,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
 from base import Test, db
-from links import utils
+from links import utils, model
 
 
 class TestUtils(Test):
@@ -72,3 +72,31 @@ class TestUtils(Test):
             assert err['status'] == 'failed', 'Member status != failed'
             assert err['error'] == e[1], "Wrong error msg for %s: %s" % (e[0],
                                                                          err['error'])
+
+    def test_save_url(self):
+        """Test save_url method"""
+        self.project_fixtures()
+        project = db.session.query(model.Project).first()
+        pybossa = dict(endpoint='http://pybossa.com', api_key='tester')
+        form = dict(url='http://daniellombrana.es', project_slug=project.slug)
+
+        # Save without taking care of Throttling
+        res = utils.save_url("127.0.0.1", form, pybossa, hour=0, max_hits=2)
+        output = json.loads(res.response[0])
+        err_msg = "URL should be saved"
+        assert output['status'] == 'saved', err_msg
+        assert output['new'] is True, err_msg
+
+        # The same URL should be not saved, but reported
+        res = utils.save_url("127.0.0.1", form, pybossa, hour=1000, max_hits=2)
+        output = json.loads(res.response[0])
+        err_msg = "URL.new should be False"
+        assert output['status'] == 'saved', err_msg
+        assert output['new'] is False, err_msg
+
+        # With Throttling
+        res = utils.save_url("127.0.0.1", form, pybossa, hour=1000, max_hits=2)
+        output = json.loads(res.response[0])
+        print output
+        err_msg = "It should not allow to save the link"
+        assert output['status'] == 'failed', err_msg

@@ -33,14 +33,14 @@ class Test(object):
 
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + tempfile.mkstemp()[1]
-        print app.config['SQLALCHEMY_DATABASE_URI']
+        print "Using DB %s" % app.config['SQLALCHEMY_DATABASE_URI']
         app.config['TESTING'] = True
         self.app = app.test_client()
         db.create_all()
 
     def project_fixtures(self):
         # Create projects
-        for i in range(0, random.randint(1, 10)):
+        for i in range(0, random.randint(5, 10)):
             name = 'name_%s' % i
             slug = 'slug_%s' % i
             pb_app_short_name = 'pb_app_short_name_%s' % i

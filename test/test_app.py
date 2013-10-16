@@ -21,7 +21,7 @@ from links import model
 
 
 class TestLinks(Test):
-    def test_GET_index(self):
+    def test_00_GET_index(self):
         """Test GET INDEX web page"""
         # With nothing on the DB
         res = self.app.get('/')
