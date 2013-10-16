@@ -76,7 +76,8 @@ def crossdomain(origin=None, methods=None, headers=None,
 def valid_link_url(url):
     """Validate URL link"""
     o = urlparse(url)
-    if (o.netloc == '') or (o.scheme == ''):
+    valid = ['http', 'https']
+    if (o.netloc == '') or (o.scheme not in valid):
         return False
     else:
         return True
