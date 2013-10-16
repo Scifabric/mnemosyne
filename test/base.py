@@ -28,6 +28,9 @@ PseudoRequest = namedtuple('PseudoRequest', ['text', 'status_code', 'headers'])
 
 
 class Test(object):
+    ERR_MSG_200_STATUS_CODE = 'Status code should be 200'
+    ERR_MSG_404_STATUS_CODE = 'Status code should be 404'
+
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + tempfile.mkstemp()[1]
         print app.config['SQLALCHEMY_DATABASE_URI']
