@@ -93,7 +93,6 @@ class TestUtils(Test):
         output = json.loads(res.response[0])
         assert output['error'] == 'project_slug arg is missing', output
 
-
     def test_save_url(self):
         """Test save_url method"""
         self.project_fixtures()
