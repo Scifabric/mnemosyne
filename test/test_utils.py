@@ -62,7 +62,7 @@ class TestUtils(Test):
                   ('url_missing', 'url arg is missing', 415),
                   ('too_many_args', 'Too many arguments. url and project_slug are the only allowed arguments', 415),
                   ('rate_limit', 'Rate limit reached', 415),
-                  ('project_slug_missing', 'Project slug arg is missing', 415),
+                  ('project_slug_missing', 'project_slug arg is missing', 415),
                   ('project_not_found', 'Project not found', 404),
                   ('server_error', 'Server Error', 500),
                   ('unknown', 'Server Error', 500)]
@@ -72,6 +72,22 @@ class TestUtils(Test):
             assert err['status'] == 'failed', 'Member status != failed'
             assert err['error'] == e[1], "Wrong error msg for %s: %s" % (e[0],
                                                                          err['error'])
+
+    def test_validate_post_args(self):
+        """Test validate_post_args method"""
+        form = dict(url='http://algo', project_slug='slug')
+        assert utils.validate_post_args(form) is None, "There should not be an error"
+
+        form = dict(project_slug='slug')
+        res = utils.validate_post_args(form)
+        output = json.loads(res.response[0])
+        assert output['error'] == 'url arg is missing', output
+
+        form = dict(url='http://algo')
+        res = utils.validate_post_args(form)
+        output = json.loads(res.response[0])
+        assert output['error'] == 'project_slug arg is missing', output
+
 
     def test_save_url(self):
         """Test save_url method"""
