@@ -15,7 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from base import Test
+from base import Test, db
 from links import utils
 
 
@@ -32,3 +32,9 @@ class TestUtils(Test):
         err_msg = "URL not validated correctly"
         for u in urls:
             assert utils.valid_link_url(u[0]) == u[1], err_msg
+
+    def test_allow_post(self):
+        """Test allow_post_method"""
+        ip = "127.0.0.1"
+        err_msg = "First POST should be allowed"
+        assert utils.allow_post(db, ip, hour=10, max_hits=5) is True, err_msg
