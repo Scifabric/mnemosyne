@@ -33,7 +33,9 @@ def index():
         # Check first if the user is allowed to post or if the user has reached the rate limit
         pybossa = dict(endpoint=app.config.get('PYBOSSA_ENDPOINT'),
                        api_key=app.config.get('PYBOSSA_API_KEY'))
-        return save_url(request.remote_addr, request.form, pybossa)
+        return save_url(request.remote_addr, request.form, pybossa,
+                        hour=app.config.get('HOUR'),
+                        max_hits=app.config.get('MAX_HITS'))
 
 
 @app.route('/project/')
