@@ -15,10 +15,24 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
-from base import Test
+from base import Test, db
+from links import model
 
 
 class TestPyBossaLinksLink(Test):
-    def test_00_get_front_page(self):
+    def test_GET_index(self):
+        """Test GET INDEX web page"""
+        # With nothing on the DB
         res = self.app.get('/')
-        assert 1 == 0, res.data
+        msg = "There are 0 stored URLs and 0 projects"
+        assert msg == res.data, "There should be 0 stored URLs and projects"
+
+        # With some links and projects
+        self.fixtures()
+        n_projects = db.session.query(model.Project).count()
+        n_links = db.session.query(model.Link).count()
+        res = self.app.get('/')
+        msg = "There are %s stored URLs and %s projects" % (n_links, n_projects)
+        err_msg = "There should be %s stored URLs and %s projects" % (n_links,
+                                                                      n_projects)
+        assert msg == res.data, err_msg

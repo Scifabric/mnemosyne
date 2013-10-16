@@ -17,9 +17,11 @@
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
 #import pbclient
 #import json
+import random
 from collections import namedtuple
 from links.web import app
 from links.core import db
+from links.model import Link, Project
 import tempfile
 
 PseudoRequest = namedtuple('PseudoRequest', ['text', 'status_code', 'headers'])
@@ -31,3 +33,20 @@ class Test(object):
         app.config['TESTING'] = True
         self.app = app.test_client()
         db.create_all()
+
+    def fixtures(self):
+        # Create projects
+        for i in range(0, random.randint(1, 10)):
+            name = 'name_%s' % i
+            slug = 'slug_%s' % i
+            pb_app_short_name = 'pb_app_short_name_%s' % i
+            keywords = '%s, %s, %s' % (name, slug, pb_app_short_name)
+            db.session.add(Project(name, slug, pb_app_short_name, keywords))
+        db.session.commit()
+
+        # Create links
+        projects = Project.query.all()
+        for p in projects:
+            for i in range(0, random.randint(1, 10)):
+                url = 'http://example.com/%s.jpg' % i
+                db.session.add(Link(url, p.id))
