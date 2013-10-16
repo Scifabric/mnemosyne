@@ -36,5 +36,22 @@ class TestUtils(Test):
     def test_allow_post(self):
         """Test allow_post_method"""
         ip = "127.0.0.1"
-        err_msg = "First POST should be allowed"
-        assert utils.allow_post(db, ip, hour=10, max_hits=5) is True, err_msg
+        # Test first MAX_HITS
+        for i in range(0, 5):
+            err_msg = "%s st POST should be allowed" % i
+            assert utils.allow_post(db, ip, hour=10, max_hits=5) is True, err_msg
+        for i in range(0, 5):
+            err_msg = "%s st POST should NOT be allowed" % i
+            assert utils.allow_post(db, ip, hour=10, max_hits=5) is False, err_msg
+
+        # Test if reset works
+        err_msg = "Hits should be reset"
+        assert utils.allow_post(db, ip, hour=0, max_hits=5) is True, err_msg
+        # And it should be possible to post again
+        for i in range(0, 4):
+            err_msg = "%s st POST should be allowed" % i
+            assert utils.allow_post(db, ip, hour=10, max_hits=5) is True, err_msg
+        for i in range(0, 5):
+            err_msg = "%s st POST should NOT be allowed" % i
+            assert utils.allow_post(db, ip, hour=10, max_hits=5) is False, err_msg
+
