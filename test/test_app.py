@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import json
 from base import Test, db
 from links import model
 
@@ -37,4 +38,20 @@ class TestLinks(Test):
                                                                       n_projects)
         assert msg == res.data, err_msg
 
+    def test_POST_index(self):
+        """Test POST INDEX web page"""
+        self.fixtures()
+        project = db.session.query(model.Project).first()
+        link = {'url': 'http://new.com/img.jpg', 'project_slug': project.slug}
+        res = self.app.post('/', data=link)
+        status = json.loads(res.data)
+        assert status['status'] == 'saved', status
+        assert status['new'] is True, status
+        assert status['id'] is not None, status
 
+        # If the same link is reported posted twice:
+        res = self.app.post('/', data=link)
+        status = json.loads(res.data)
+        assert status['status'] == 'saved', status
+        assert status['new'] is False, status
+        assert status['id'] is not None, status

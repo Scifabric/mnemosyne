@@ -30,6 +30,7 @@ PseudoRequest = namedtuple('PseudoRequest', ['text', 'status_code', 'headers'])
 class Test(object):
     def setUp(self):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + tempfile.mkstemp()[1]
+        print app.config['SQLALCHEMY_DATABASE_URI']
         app.config['TESTING'] = True
         self.app = app.test_client()
         db.create_all()
@@ -48,5 +49,5 @@ class Test(object):
         projects = Project.query.all()
         for p in projects:
             for i in range(0, random.randint(1, 10)):
-                url = 'http://example.com/%s.jpg' % i
+                url = 'http://%s.com/%s.jpg' % (p.slug, i)
                 db.session.add(Link(url, p.id))
