@@ -43,7 +43,7 @@ class Test(object):
         for i in range(0, random.randint(5, 10)):
             name = 'name_%s' % i
             slug = 'slug_%s' % i
-            pb_app_short_name = 'pb_app_short_name_%s' % i
+            pb_app_short_name = name + "_" + slug
             keywords = '%s, %s, %s' % (name, slug, pb_app_short_name)
             db.session.add(Project(name, slug, pb_app_short_name, keywords))
         db.session.commit()
