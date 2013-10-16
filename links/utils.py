@@ -141,7 +141,6 @@ def handle_error(error_type):
     if error_type == 'server_error':
         error['error'] = 'Server Error'
         status_code = 500
-    print json.dumps(error)
     return Response(json.dumps(error), status_code)
 
 
