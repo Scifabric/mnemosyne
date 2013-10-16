@@ -21,6 +21,10 @@ from links import utils, model
 
 
 class TestUtils(Test):
+
+    def tearDown(self):
+        db.session.remove()
+
     def test_valid_link_url(self):
         """Test valid_link_url method"""
         urls = [('http:', False),
@@ -120,3 +124,14 @@ class TestUtils(Test):
         print output
         err_msg = "It should not allow to save the link"
         assert output['status'] == 'failed', err_msg
+
+    def test_get_exif(self):
+        """Test get_exif method"""
+        self.project_fixtures()
+        project = db.session.query(model.Project).first()
+        link = model.Link(url="http://farm3.staticflickr.com/2870/10074898405_c31af1fc9e_o.jpg",
+                          project_id=project.id)
+        db.session.add(link)
+        db.session.commit()
+        pybossa = dict(endpoint='http://localhost:500', api_key='tester')
+        utils.get_exif(link.dictize(), project.dictize(), pybossa)
