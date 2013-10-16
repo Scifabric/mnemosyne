@@ -135,3 +135,12 @@ class TestUtils(Test):
         db.session.commit()
         pybossa = dict(endpoint='http://localhost:500', api_key='tester')
         utils.get_exif(link.dictize(), project.dictize(), pybossa)
+        assert link.exif is not None, "The picture should have some EXIF data"
+
+        # Now with a picture that does not have EXIF data
+        link = model.Link(url="http://farm3.staticflickr.com/2870/10074898405_c8336bc52a_s.jpg",
+                          project_id=project.id)
+        db.session.add(link)
+        db.session.commit()
+        utils.get_exif(link.dictize(), project.dictize(), pybossa)
+        assert link.exif == "{}", "The picture should not have EXIF data"
