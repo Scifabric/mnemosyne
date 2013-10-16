@@ -138,7 +138,7 @@ def handle_error(error_type):
         error['error'] = 'Rate limit reached'
         status_code = 415
     if error_type == 'project_slug_missing':
-        error['error'] = 'Project slug arg is missing'
+        error['error'] = 'project_slug arg is missing'
         status_code = 415
     if error_type == 'project_not_found':
         error['error'] = 'Project not found'
