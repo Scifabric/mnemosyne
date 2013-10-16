@@ -221,9 +221,12 @@ def create_pybossa_task(link_id, app_short_name, pybossa):
     pbclient.set('endpoint', pybossa.get('endpoint'))
     pbclient.set('api_key', pybossa.get('api_key'))
     data = pbclient.find_app(short_name=app_short_name)
-    if type(data) == list:
+    if type(data) == list and len(data) > 0:
         app = data[0]
+        print app
         link = db.session.query(Link).get(link_id)
+        if link.exif is None:
+            link.exif = "{}"
         task_info = dict(id=link.id,
                          url=link.url,
                          project_id=link.project_id,
