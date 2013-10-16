@@ -16,8 +16,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import json
-from base import Test, db
+from base import Test, db, PseudoRequest
 from links import utils, model
+from mock import patch
 
 
 class TestUtils(Test):
@@ -144,3 +145,21 @@ class TestUtils(Test):
         db.session.commit()
         utils.get_exif(link.dictize(), project.dictize(), pybossa)
         assert link.exif == "{}", "The picture should not have EXIF data"
+
+    @patch('pbclient.requests.get')
+    @patch('pbclient.requests.post')
+    def test_create_pybossa_task(self, MockTask, MockApp):
+        """Test create_pybossa_task method"""
+        self.fixtures()
+        pybossa = dict(endpoint='http://localhost:500', api_key='tester')
+        short_name = 'algo'
+        app = dict(id=1, short_name=short_name)
+        task = dict(id=1, app_id=1)
+        MockApp.return_value = PseudoRequest(text=json.dumps([app]), status_code=200, headers={'content-type': 'application-json'})
+        MockTask.return_value = PseudoRequest(text=json.dumps(task), status_code=200, headers={'content-type': 'application-json'})
+        output = utils.create_pybossa_task(1, short_name, pybossa)
+        assert output.id == task['id'], "A task must be created"
+
+        MockApp.return_value = PseudoRequest(text=json.dumps([]), status_code=200, headers={'content-type': 'application-json'})
+        output = utils.create_pybossa_task(1, short_name, pybossa)
+        assert output == "PyBossa App %s not found" % short_name
