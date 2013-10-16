@@ -55,3 +55,30 @@ class TestLinks(Test):
         assert status['status'] == 'saved', status
         assert status['new'] is False, status
         assert status['id'] is not None, status
+
+    def test_GET_project(self):
+        """Test GET PROJECT web page"""
+        # Empty DB
+        res = self.app.get('/project/')
+        output = json.loads(res.data)
+        assert len(output) == 0, "It should return an empty list"
+
+        # Now with some data
+        self.fixtures()
+        projects = db.session.query(model.Project).all()
+        res = self.app.get('/project/')
+        output = json.loads(res.data)
+        err_msg = "There should be the same number of projects"
+        assert len(output) == len(projects), err_msg
+        for p in projects:
+            assert p.dictize() in output, "A project is missing"
+
+        # Get a specific project
+        res = self.app.get('/project/?slug=%s' % projects[0].slug)
+        output = json.loads(res.data)
+        assert output["id"] == projects[0].id, "The returned project is wrong"
+        assert res.status_code == 200, self.ERR_MSG_200_STATUS_CODE
+
+        # Get a project that does not exist
+        res = self.app.get('/project/?slug=inventado')
+        assert res.status_code == 404, self.ERR_MSG_404_STATUS_CODE
