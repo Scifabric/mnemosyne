@@ -21,7 +21,7 @@ import random
 from collections import namedtuple
 from links.web import app
 from links.core import db
-from links.model import Link, Project
+from links.model import Link, Project, Throttle
 import tempfile
 
 PseudoRequest = namedtuple('PseudoRequest', ['text', 'status_code', 'headers'])
@@ -38,7 +38,7 @@ class Test(object):
         self.app = app.test_client()
         db.create_all()
 
-    def fixtures(self):
+    def project_fixtures(self):
         # Create projects
         for i in range(0, random.randint(1, 10)):
             name = 'name_%s' % i
@@ -48,9 +48,19 @@ class Test(object):
             db.session.add(Project(name, slug, pb_app_short_name, keywords))
         db.session.commit()
 
+    def links_fixtures(self):
         # Create links
         projects = Project.query.all()
         for p in projects:
             for i in range(0, random.randint(1, 10)):
                 url = 'http://%s.com/%s.jpg' % (p.slug, i)
                 db.session.add(Link(url, p.id))
+        db.session.commit()
+
+    def fixtures(self):
+        self.project_fixtures()
+        self.links_fixtures()
+
+    def throttle_fixtures(self):
+        db.session.add(Throttle(ip="127.0.0.1", hits="1"))
+        db.session.commit()
