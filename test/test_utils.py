@@ -23,6 +23,8 @@ class TestUtils(Test):
     def test_valid_link_url(self):
         """Test valid_link_url method"""
         urls = [('http:', False),
+                ('htt', False),
+                ('ftp://example.com/img.jpg', False),
                 ('http://', False),
                 ('http://example.com/', True),
                 ('http://example.com/img.jpg', True),
