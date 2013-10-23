@@ -16,13 +16,19 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
 import json
-from flask import request, Response
-from core import app
-from utils import crossdomain, save_url
-from model import Project, Link
+from flask import request, Response, Blueprint, current_app
+from utils import crossdomain
+from mnemosyne.model import db
+from mnemosyne.model.link import Link
+from mnemosyne.model.project import Project
+from mnemosyne.logic.throttle import validate_ip
+from mnemosyne.logic.link import validate_args, save_url
 
 
-@app.route("/", methods=['GET', 'POST'])
+frontend = Blueprint('frontend', __name__)
+
+
+@frontend.route("/", methods=['GET', 'POST'])
 @crossdomain(origin='*')
 def index():
     if request.method == 'GET':
@@ -30,15 +36,22 @@ def index():
         projects = Project.query.all()
         return "There are %s stored URLs and %s projects" % (len(links), len(projects))
     else:
-        # Check first if the user is allowed to post or if the user has reached the rate limit
-        pybossa = dict(endpoint=app.config.get('PYBOSSA_ENDPOINT'),
-                       api_key=app.config.get('PYBOSSA_API_KEY'))
-        return save_url(request.remote_addr, request.form, pybossa,
-                        hour=app.config.get('HOUR'),
-                        max_hits=app.config.get('MAX_HITS'))
+        pybossa = dict(endpoint=current_app.config.get('PYBOSSA_ENDPOINT'),
+                       api_key=current_app.config.get('PYBOSSA_API_KEY'))
+        # Check first if POST is allowed
+        validate_ip(ip=request.remote_addr,
+                   hour=current_app.config.get('HOUR'),
+                   max_hits=current_app.config.get('MAX_HITS'))
+        # Validate POST args
+        validate_args(request.form)
+        # Save Link
+        return save_url(request.form, pybossa)
+        #return save_url(request.remote_addr, request.form, pybossa,
+        #                hour=current_app.config.get('HOUR'),
+        #                max_hits=current_app.config.get('MAX_HITS'))
 
 
-@app.route('/project/')
+@frontend.route('/project/')
 @crossdomain(origin='*')
 def project():
     if (request.args.get('slug')):
@@ -52,5 +65,5 @@ def project():
                         status=200)
 
 
-if __name__ == "__main__":  # pragma: no cover
-    app.run(host=app.config.get('HOST'))
+#if __name__ == "__main__":  # pragma: no cover
+#    app.run(host=app.config.get('HOST'))

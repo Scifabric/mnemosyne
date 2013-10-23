@@ -16,14 +16,20 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
 from flask import Flask
-from flask.ext.sqlalchemy import SQLAlchemy
-from redis import Redis
-from rq import Queue
+from mnemosyne.frontend import frontend
+from mnemosyne.model import db
 import settings
 
-app = Flask(__name__)
-app.config.from_object(settings)
-db = SQLAlchemy(app)
-# Create the Queue
-q_image = Queue('image', connection=Redis())
-q_pybossa = Queue('pybossa', connection=Redis())
+
+def create_app(db_name=None, testing=False):
+    app = Flask(__name__)
+    app.config.from_object(settings)
+
+    if db_name:
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_name
+
+    db.init_app(app)
+
+    app.register_blueprint(frontend)
+
+    return app

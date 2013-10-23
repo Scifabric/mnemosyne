@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# This file is part of PyBossa-links
+# This file is part of PyBossa-links.
 #
 # Copyright (C) 2013 Daniel Lombraña González
 #
@@ -15,9 +15,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
-from mnemosyne.models import db
-from mnemosyne.core import create_app
+from redis import Redis
+from rq import Queue
 
-app, q_image, q_pybossa = create_app()
-with app.app_context():
-    db.create_all()
+
+def setup_queues(async=True):
+    q_image = Queue('image', connection=Redis(), async=async)
+    q_pybossa = Queue('pybossa', connection=Redis(), async=async)
+    return q_image, q_pybossa
+
+q_image, q_pybossa = setup_queues()

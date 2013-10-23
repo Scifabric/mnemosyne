@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# This file is part of PyBossa-links
+# This file is part of PyBossa-links.
 #
 # Copyright (C) 2013 Daniel Lombraña González
 #
@@ -15,9 +15,8 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
-from mnemosyne.models import db
 from mnemosyne.core import create_app
 
-app, q_image, q_pybossa = create_app()
-with app.app_context():
-    db.create_all()
+if __name__ == "__main__":  # pragma: no cover
+    app = create_app()
+    app.run(host=app.config.get('HOST'))
