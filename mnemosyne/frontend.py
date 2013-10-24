@@ -18,11 +18,12 @@
 import json
 from flask import request, Response, Blueprint, current_app
 from utils import crossdomain
-from mnemosyne.model import db
+#from mnemosyne.model import db
 from mnemosyne.model.link import Link
 from mnemosyne.model.project import Project
 from mnemosyne.logic.throttle import validate_ip
 from mnemosyne.logic.link import validate_args, save_url
+from mnemosyne.logic.project import exists
 
 
 frontend = Blueprint('frontend', __name__)
@@ -40,12 +41,14 @@ def index():
                        api_key=current_app.config.get('PYBOSSA_API_KEY'))
         # Check first if POST is allowed
         validate_ip(ip=request.remote_addr,
-                   hour=current_app.config.get('HOUR'),
-                   max_hits=current_app.config.get('MAX_HITS'))
+                    hour=current_app.config.get('HOUR'),
+                    max_hits=current_app.config.get('MAX_HITS'))
         # Validate POST args
         validate_args(request.form)
+        # Check if associated project exists
+        project = exists(request.form.get('project_slug'))
         # Save Link
-        return save_url(request.form, pybossa)
+        return save_url(request.form, pybossa, project)
         #return save_url(request.remote_addr, request.form, pybossa,
         #                hour=current_app.config.get('HOUR'),
         #                max_hits=current_app.config.get('MAX_HITS'))

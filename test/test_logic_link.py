@@ -55,14 +55,14 @@ class TestLogicLink(Test):
             pybossa = dict(endpoint='http://pybossa.com', api_key='tester')
             form = dict(url='http://daniellombrana.es', project_slug=project.slug)
 
-            res = save_url(form, pybossa, async=False)
+            res = save_url(form, pybossa, project, async=False)
             output = json.loads(res.response[0])
             err_msg = "URL should be saved"
             assert output['status'] == 'saved', err_msg
             assert output['new'] is True, err_msg
 
             # The same URL should be not saved, but reported as saved
-            res = save_url(form, pybossa, async=False)
+            res = save_url(form, pybossa, project, async=False)
             output = json.loads(res.response[0])
             err_msg = "URL.new should be False"
             assert output['status'] == 'saved', err_msg

@@ -36,11 +36,7 @@ def validate_args(form):
         return handle_error('too_many_args')
 
 
-def save_url(form, pybossa, async=True):
-        # First get the project
-        project = Project.query.filter_by(slug=form.get('project_slug')).first()
-        if project is None:
-            return handle_error('project_not_found')
+def save_url(form, pybossa, project, async=True):
         link = Link(url=form['url'], project_id=project.id)
         # We have a valid link, now check if this url has been already reported
         res = Link.query.filter_by(url=link.url).first()
