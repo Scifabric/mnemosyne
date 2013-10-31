@@ -15,17 +15,29 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Unit Tests for Logic package.
+
+This exports:
+    - TestLogic class for running the tests
+
+"""
 from base import Test
 from mnemosyne.logic import handle_error
 import json
 
 
 class TestLogic(Test):
+
+    """Class for testing Logic package."""
+
     def test_handle_error(self):
-        """Test handle_error method"""
+        """Test handle_error method."""
         errors = [('invalid_url', 'Invalid URL', 415),
                   ('url_missing', 'url arg is missing', 415),
-                  ('too_many_args', 'Too many arguments. url and project_slug are the only allowed arguments', 415),
+                  ('too_many_args', 'Too many arguments.'
+                                    'url and project_slug are '
+                                    'the only allowed arguments', 415),
                   ('rate_limit', 'Rate limit reached', 415),
                   ('project_slug_missing', 'project_slug arg is missing', 415),
                   ('project_not_found', 'Project not found', 404),
@@ -35,5 +47,5 @@ class TestLogic(Test):
             res = handle_error(e[0])
             err = json.loads(res.response[0])
             assert err['status'] == 'failed', 'Member status != failed'
-            assert err['error'] == e[1], "Wrong error msg for %s: %s" % (e[0],
-                                                                         err['error'])
+            err_msg = "Wrong error msg for %s: %s" % (e[0], err['error'])
+            assert err['error'] == e[1], err_msg
