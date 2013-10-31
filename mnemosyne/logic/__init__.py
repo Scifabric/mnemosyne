@@ -51,8 +51,8 @@ def handle_error(error_type):
         error['error'] = 'url arg is missing'
         status_code = 415
     if error_type == 'too_many_args':
-        error['error'] = "Too many arguments. url and project_slug \
-                          are the only allowed arguments"
+        error['error'] = ('Too many arguments. url and project_slug'
+                          ' are the only allowed arguments')
         status_code = 415
     if error_type == 'rate_limit':
         error['error'] = 'Rate limit reached'

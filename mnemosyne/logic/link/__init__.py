@@ -28,7 +28,6 @@ This exports:
 from flask import Response
 from mnemosyne.logic import handle_error
 from mnemosyne.model.link import Link
-#from mnemosyne.model.project import Project
 from mnemosyne.queues import q_image, q_pybossa
 from StringIO import StringIO
 import requests

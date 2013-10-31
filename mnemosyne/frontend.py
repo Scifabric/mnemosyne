@@ -84,8 +84,10 @@ def project():
 
     """
     if (request.args.get('slug')):
-        Project.query.filter_by(slug=request.args.get('slug')).first_or_404()
-        return Response(json.dumps(project.dictize()),
+        _project = Project.query\
+                          .filter_by(slug=request.args.get('slug'))\
+                          .first_or_404()
+        return Response(json.dumps(_project.dictize()),
                         mimetype="application/json",
                         status=200)
     else:
