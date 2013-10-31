@@ -15,11 +15,28 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Throttle Model package.
+
+This exports:
+    - Throttle a clas to create/manage/store Throttle objects
+
+"""
 from mnemosyne.model import DomainObject, db
 import datetime
 
 
 class Throttle(db.Model, DomainObject):
+
+    """
+    Class for Throttle objects.
+
+    Keyword arguments:
+        ip -- IP
+        hits -- Number of requests done
+
+    """
+
     id = db.Column(db.Integer, primary_key=True)
     # Request IP: origin of the API request
     ip = db.Column(db.Text, unique=True)
