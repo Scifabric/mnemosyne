@@ -15,10 +15,20 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
-from flask import Response, current_app
+"""
+Logic package for Link objects.
+
+This exports:
+    - validate_args a function to valide form POST args
+    - save_url a function to save a link POST request
+    - get_exif a function to extract EXIF data from Link.url
+    - create_pybossa_task a function to create a PyBossa task for Link
+
+"""
+from flask import Response
 from mnemosyne.logic import handle_error
 from mnemosyne.model.link import Link
-from mnemosyne.model.project import Project
+#from mnemosyne.model.project import Project
 from mnemosyne.queues import q_image, q_pybossa
 from StringIO import StringIO
 import requests
@@ -28,6 +38,17 @@ import pbclient
 
 
 def validate_args(form):
+    """
+    Validate form POST request arguments.
+
+    Keyword arguments:
+        form -- the form with fields url and project_slug
+
+    Return value:
+        None -- if arguments are correct
+        Error -- using handle_error function
+
+    """
     if not form.get('url'):
         return handle_error('url_missing')
     if not form.get('project_slug'):
@@ -37,35 +58,60 @@ def validate_args(form):
 
 
 def save_url(form, pybossa, project, async=True):
-        link = Link(url=form['url'], project_id=project.id)
-        # We have a valid link, now check if this url has been already reported
-        res = Link.query.filter_by(url=link.url).first()
-        if res is None:
-            link.status = "saved"
-            link.save()
-            success = dict(id=link.id,
-                           url=link.url,
-                           new=True,
-                           status=link.status)
-            # Enqueue Extraction of EXIF data if not testing
-            if async:
-                q_image.enqueue('mnemosyne.logic.link.get_exif',
-                                link.dictize(), link.project.dictize(),
-                                pybossa, async)
-            return Response(json.dumps(success), mimetype="application/json",
-                            status=200)
-        else:
-            link = res
-            success = dict(id=link.id,
-                           url=link.url,
-                           new=False,
-                           status=link.status)
-            return Response(json.dumps(success), mimetype="application/json",
-                            status=200)
+    """
+    Save form POST request, Link, in the web service.
+
+    Keyword arguments:
+        form -- url and project_slug fields to save
+        pybossa -- dictionary with PyBossa api_key and endpoint value
+        project -- associated Link.project
+        async -- Enable/Disable async operation in queues
+
+    Return value:
+        Flask.Response -- Saved Link object in JSON format
+
+    """
+    link = Link(url=form['url'], project_id=project.id)
+    # We have a valid link, now check if this url has been already reported
+    res = Link.query.filter_by(url=link.url).first()
+    if res is None:
+        link.status = "saved"
+        link.save()
+        success = dict(id=link.id,
+                       url=link.url,
+                       new=True,
+                       status=link.status)
+        # Enqueue Extraction of EXIF data if not testing
+        if async:
+            q_image.enqueue('mnemosyne.logic.link.get_exif',
+                            link.dictize(), link.project.dictize(),
+                            pybossa, async)
+        return Response(json.dumps(success), mimetype="application/json",
+                        status=200)
+    else:
+        link = res
+        success = dict(id=link.id,
+                       url=link.url,
+                       new=False,
+                       status=link.status)
+        return Response(json.dumps(success), mimetype="application/json",
+                        status=200)
 
 
 def get_exif(link, project, pybossa, async=True):
-    """Return a dictionary with the EXIF data of the image"""
+    """
+    Return a dictionary with the EXIF data of the image.
+
+    Keyword arguments:
+        link -- Link.dictize() object
+        project -- Project.dictize() object
+        pybossa -- Dictionary with PyBossa api_key and endpoint values
+        async -- Enable/Disable async
+
+    Return value:
+        Link.exif -- if Link.url picture has EXIF data
+
+    """
     from mnemosyne.core import create_app
     from mnemosyne.model.link import Link
     app = create_app()
@@ -83,14 +129,26 @@ def get_exif(link, project, pybossa, async=True):
         updated_link.status = "img_processed"
         updated_link.save()
         # Enqueue the creation of the PyBossa task for this link if not testing
-        if async: # pragma: no cover
+        if async:  # pragma: no cover
             q_pybossa.enqueue('mnemosyne.logic.link.create_pybossa_task',
-                              link['id'], project['pb_app_short_name'], pybossa)
+                              link['id'], project['pb_app_short_name'],
+                              pybossa)
         return updated_link.exif
 
 
 def create_pybossa_task(link_id, app_short_name, pybossa):
-    """Create a PyBossa tasks for a given app_short_name"""
+    """
+    Create a PyBossa tasks for a given app_short_name.
+
+    Keyword arguments:
+        link_id -- Link.id value
+        app_short_name -- PyBossa application short_name
+        pybossa -- Dictionary with PyBossa api_key and endpoint values
+
+    Value return:
+        PyBossa.task
+
+    """
     from mnemosyne.core import create_app
     from mnemosyne.model.link import Link
     app = create_app()
@@ -113,12 +171,10 @@ def create_pybossa_task(link_id, app_short_name, pybossa):
                 link.status = 'pybossa_task_created'
                 link.pybossa_task_id = task.id
                 link.save()
-                #db.session.commit()
                 return task
             else:
                 link.status = 'pybossa_task_failed'
                 link.save()
-                #db.session.commit()
                 return task
         else:
             return "PyBossa App %s not found" % app_short_name

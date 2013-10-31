@@ -15,13 +15,31 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Package for creating Mnemosyne Python-RQ queues.
+
+This exports:
+    - setup_queues a function that creates two queues: q_image and q_pybossa
+
+"""
 from redis import Redis
 from rq import Queue
 
 
 def setup_queues(async=True):
-    q_image = Queue('image', connection=Redis(), async=async)
-    q_pybossa = Queue('pybossa', connection=Redis(), async=async)
-    return q_image, q_pybossa
+    """
+    Configure Python-RQ queues for mnemosyne.
+
+    Keyword arguments:
+        async -- Enable/Disable async jobs
+
+    Return value:
+        q_image -- Python-RQ queue for processing image links
+        q_pybossa -- Python-RQ queue for creating PyBossa tasks
+
+    """
+    _q_image = Queue('image', connection=Redis(), async=async)
+    _q_pybossa = Queue('pybossa', connection=Redis(), async=async)
+    return _q_image, _q_pybossa
 
 q_image, q_pybossa = setup_queues()

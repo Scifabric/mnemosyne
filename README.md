@@ -1,4 +1,4 @@
-PyBossa-links: a micro service to save bookmarks as PyBossa tasks
+Mnemosyne: a micro service to save bookmarks as PyBossa tasks
 =================================================================
 
 This micro-service is a very simple Flask application that allows you to save
@@ -62,12 +62,12 @@ Now you have to create a virtual host for hosting the micro-service. In the
  <VirtualHost *:80>
     ServerName example.com
 
-    DocumentRoot /home/user/pybossa-links
-    WSGIDaemonProcess pybossa-links user=user1 group=group1 threads=5
-    WSGIScriptAlias / /home/user/pybossa-links/contrib/pybossa-links.wsgi
+    DocumentRoot /home/user/Mnemosyne
+    WSGIDaemonProcess Mnemosyne user=user1 group=group1 threads=5
+    WSGIScriptAlias / /home/user/Mnemosyne/contrib/Mnemosyne.wsgi
 
-    <Directory /home/user/pybossa-links>
-        WSGIProcessGroup pybossa-links
+    <Directory /home/user/Mnemosyne>
+        WSGIProcessGroup Mnemosyne
         WSGIApplicationGroup %{GLOBAL}
         Order deny,allow
         Allow from all
@@ -83,7 +83,7 @@ Once you have adapted the PATH in that file, copy it into the folder:
 
 Enable the site:
 
- $ sudo a2ensite pybossa-links
+ $ sudo a2ensite Mnemosyne
 
 And restart the server:
 

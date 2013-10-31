@@ -15,13 +15,31 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Package for creating the Flask application.
+
+This exports:
+    - create_app a function that creates the Flask application
+
+"""
 from flask import Flask
 from mnemosyne.frontend import frontend
 from mnemosyne.model import db
-import settings
+import mnemosyne.settings as settings
 
 
 def create_app(db_name=None, testing=False):
+    """
+    Create the Flask app object after configuring it.
+
+    Keyword arguments:
+        db_name -- Database name
+        testing -- Enable/Disable testing mode
+
+    Return value:
+        app -- Flask application object
+
+    """
     app = Flask(__name__)
     app.config.from_object(settings)
 

@@ -17,10 +17,11 @@
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
 
 """
-    Mnemosyne
-    ~~~~~~~~
+Mnemosyne throttle package.
 
-    Mnemosyne logic.throttle package
+This exports:
+    - validate_ip a function to throttle POST requests from same IP
+
 """
 from mnemosyne.model.throttle import Throttle
 from mnemosyne.logic import handle_error
@@ -28,7 +29,19 @@ import datetime
 
 
 def validate_ip(ip, hour=None, max_hits=None):
-    """Manage throttling for current IP"""
+    """
+    Manage throttling for current IP.
+
+    Keyword arguments:
+        ip -- IP of the current request
+        hour -- Frequency to reset hit counter for IP
+        max_hits -- Maximum amount of request/hits per hour
+
+    Return value:
+        True -- If current IP is within the limits
+        Error -- If current IP has sent more requests than allowed
+
+    """
     t = Throttle.query.filter_by(ip=ip).first()
     if t:
         now = datetime.datetime.utcnow()
@@ -39,15 +52,14 @@ def validate_ip(ip, hour=None, max_hits=None):
 
         if max_hits is None:   # pragma: no cover
             max_hits = 250
-        # if the IP has done a POST in the last hour, check the number of allowed hits
+        # if the IP has done a POST in the last hour,
+        # check the number of allowed hits
         if (diff.total_seconds() < (hour)):
             if t.hits < max_hits:
                 # Update the number hits
                 t.hits += 1
                 # Update the date
                 t.date = datetime.datetime.utcnow()
-                #db.session.add(t)
-                #db.session.commit()
                 t._save()
                 return True
             else:
@@ -63,5 +75,3 @@ def validate_ip(ip, hour=None, max_hits=None):
         t = Throttle(ip=ip, hits=1)
         t._save()
         return True
-        #db.session.add(t)
-        #db.session.commit()
