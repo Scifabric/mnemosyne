@@ -15,12 +15,29 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Model package for Link.
+
+This exports:
+    - Link a class to handle Link objects in the database
+
+"""
 from mnemosyne.model import DomainObject, db
 from urlparse import urlparse
 import datetime
 
 
 class Link(db.Model, DomainObject):
+
+    """
+    Class for creating a Link object.
+
+    Keyword arguments:
+        url -- a URL string
+        project_id -- Project ID associated with the Link
+
+    """
+
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.Text, unique=True)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
@@ -38,7 +55,13 @@ class Link(db.Model, DomainObject):
         return '<Link %r>' % self.url
 
     def _valid_url(self):
-        """Validate URL link"""
+        """
+        Validate URL link.
+
+        Return value:
+            Boolean
+
+        """
         o = urlparse(self.url)
         valid = ['http', 'https']
         if (o.netloc == '') or (o.scheme not in valid):
@@ -47,6 +70,16 @@ class Link(db.Model, DomainObject):
             return True
 
     def save(self):
+        """
+        Save Link object in the database.
+
+        Return value:
+            Link -- saved object
+
+        Raises:
+            Exception -- if URL is not valid before saving it
+
+        """
         if self._valid_url():
             self._save()
             return self
