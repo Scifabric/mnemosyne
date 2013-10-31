@@ -15,11 +15,30 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Model for Project object.
+
+This exports:
+    - Project a class for creating/managing/storing Project objects
+
+"""
 from mnemosyne.model import DomainObject, db
 import datetime
 
 
 class Project(db.Model, DomainObject):
+
+    """
+    Class for Project object.
+
+    Keyword arguments:
+        name -- Project name
+        slug -- Project short name or slug
+        pb_app_short_name -- PyBossa application short_name related to project
+        keywords -- Project keywords
+
+    """
+
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(255), unique=True)
     slug = db.Column(db.String(50), unique=True)
