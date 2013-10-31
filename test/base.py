@@ -15,6 +15,13 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Base package for testing Mnemosyne application.
+
+This exports:
+    - Test a generic class for setting up database and fixtures
+
+"""
 import random
 from collections import namedtuple
 from mnemosyne.core import create_app
@@ -29,10 +36,14 @@ PseudoRequest = namedtuple('PseudoRequest', ['text', 'status_code', 'headers'])
 
 
 class Test(object):
+
+    """Class for Testing the Mnemosyne application."""
+
     ERR_MSG_200_STATUS_CODE = 'Status code should be 200'
     ERR_MSG_404_STATUS_CODE = 'Status code should be 404'
 
     def setUp(self):
+        """Create the database and enable Testing mode."""
         self.db_fd, self.db_name = tempfile.mkstemp()
 
         self.app = create_app(db_name="sqlite:///" + self.db_name,
@@ -46,10 +57,12 @@ class Test(object):
             self.db.create_all()
 
     def tearDown(self):
+        """Tear down database and connections."""
         os.close(self.db_fd)
         os.unlink(self.db_name)
 
     def project_fixtures(self):
+        """Create Project fixtures."""
         # Create projects
         with self.app.app_context():
             for i in range(0, random.randint(5, 10)):
@@ -57,10 +70,12 @@ class Test(object):
                 slug = 'slug_%s' % i
                 pb_app_short_name = name + "_" + slug
                 keywords = '%s, %s, %s' % (name, slug, pb_app_short_name)
-                self.db.session.add(Project(name, slug, pb_app_short_name, keywords))
+                self.db.session.add(Project(name, slug,
+                                            pb_app_short_name, keywords))
             self.db.session.commit()
 
     def links_fixtures(self):
+        """Create Link fixtures."""
         # Create links
         projects = Project.query.all()
         for p in projects:
@@ -70,9 +85,11 @@ class Test(object):
         self.db.session.commit()
 
     def fixtures(self):
+        """Create Project and Link fixtures."""
         self.project_fixtures()
         self.links_fixtures()
 
     def throttle_fixtures(self):
+        """Create Throttle fixtures."""
         db.session.add(Throttle(ip="127.0.0.1", hits="1"))
         db.session.commit()
