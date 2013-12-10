@@ -90,3 +90,37 @@ And restart the server:
  $ sudo service apache2 restart
  
 Now the server is configured and app. Enjoy!
+
+Deploying the service witn Nginx and uwsgi
+==========================================
+
+You can also deploy the web service using Nginx and uwsgi. The contib folder
+has two templates that you can easily adapt to deploy it.
+
+Copy the **contrib/uwsgi/mnemosyne.ini.tmpl** template, and rename it to
+**mnemosyne.ini**. Then modify the values to match your paths, name, etc.
+
+You can then run the service with the following command (without even
+activating the virutal environment):
+
+```bash
+   $ cd yourapplicationpath
+   $ env/bin/uwsgi contrib/uwsgi/mnemosyne.ini
+```
+
+If the command runs successfully, you should be able to see that two sockets
+are created:
+
+* **/tmp/mnemosyne.sock**
+* **/tmp/mnemosyne-stats.sock**
+
+The first one is the web service, the second one is the uwsgi stats socket for
+analyzing the performance of your config file. Once you are happy with it, use
+[Supervisord](http://supervisord.org/) for running the service automatically,
+or if you prefer, create an init.d script.
+
+Then, copy the **contrib/nginx/mnemosyne.conf.tmpl** to **mnemosyne.conf**
+file, adapt it, and place it in the nginx site folder (*note*: this varies
+between distributions, in Ubuntu or Debian based ones, the folder is
+*/etc/nginx/sites-available* and then a symlink into */etc/nginx/sites-enabled*
+in order to enable it). Restart nginx and the service should be available.
