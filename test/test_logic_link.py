@@ -15,45 +15,96 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Unit Tests for logic.link package.
+
+This exports:
+    - TestLogicLink class with its unit tests
+
+"""
 from base import Test, PseudoRequest
 from mock import patch
-from mnemosyne.logic.link import validate_args, save_url, get_exif, create_pybossa_task
+from mnemosyne.logic.link import validate_args, save_url, get_exif, \
+    create_pybossa_task
 from mnemosyne.model.project import Project
 from mnemosyne.model.link import Link
 import json
 
 
 class TestLogicLink(Test):
+
+    """Class for testing logic.link package."""
+
     def tearDown(self):
+        """Remove self.db.session."""
         self.db.session.remove()
 
     def test_01_validate_args(self):
-        """Test Link.validate_args() method"""
-        form = dict(url='http://algo', project_slug='slug', extra='extra')
+        """Test Link.validate_args() method."""
+        uri = 'http://algo.com'
+        url = "%s/img.jpg" % uri
+        form = dict(url=url, project_slug='slug',
+                    uri=uri, extra='extra')
         res = validate_args(form)
         output = json.loads(res.response[0])
-        assert output['error'] == 'Too many arguments. url and project_slug are the only allowed arguments', output
+        err_msg = ('Too many arguments. url, project_slug and uri'
+                   ' are the only allowed arguments')
+        assert output['error'] == err_msg, output
 
         form.pop('extra')
         assert validate_args(form) is None, "There should not be an error"
 
+        form = dict(project_slug='slug', uri=uri)
+        res = validate_args(form)
+        output = json.loads(res.response[0])
+        output = json.loads(res.response[0])
+        err = 'one or more arguments are missing, required: url, project_slug, uri'
+        assert output['error'] == err, output
+
+        form = dict(url=url, uri=uri)
+        res = validate_args(form)
+        output = json.loads(res.response[0])
+        err = 'one or more arguments are missing, required: url, project_slug, uri'
+        assert output['error'] == err, output
+
+        form = dict(url=url, project_slug='slug')
+        res = validate_args(form)
+        output = json.loads(res.response[0])
+        err = 'one or more arguments are missing, required: url, project_slug, uri'
+        assert output['error'] == err, output
+
         form = dict(project_slug='slug')
         res = validate_args(form)
         output = json.loads(res.response[0])
-        assert output['error'] == 'url arg is missing', output
+        err = 'one or more arguments are missing, required: url, project_slug, uri'
+        assert output['error'] == err, output
 
-        form = dict(url='http://algo')
+        form = dict(url=url)
         res = validate_args(form)
         output = json.loads(res.response[0])
-        assert output['error'] == 'project_slug arg is missing', output
+        err = 'one or more arguments are missing, required: url, project_slug, uri'
+        assert output['error'] == err, output
+
+        form = dict(uri=uri)
+        res = validate_args(form)
+        output = json.loads(res.response[0])
+        err = 'one or more arguments are missing, required: url, project_slug, uri'
+        assert output['error'] == err, output
+
+        form = dict()
+        res = validate_args(form)
+        output = json.loads(res.response[0])
+        err = 'one or more arguments are missing, required: url, project_slug, uri'
+        assert output['error'] == err, output
 
     def test_save_url(self):
-        """Test save_url method"""
+        """Test save_url method."""
         with self.app.app_context():
             self.project_fixtures()
             project = Project.query.first()
             pybossa = dict(endpoint='http://pybossa.com', api_key='tester')
-            form = dict(url='http://daniellombrana.es', project_slug=project.slug)
+            form = dict(url='http://daniellombrana.es',
+                        project_slug=project.slug)
 
             res = save_url(form, pybossa, project, async=False)
             output = json.loads(res.response[0])
@@ -69,48 +120,67 @@ class TestLogicLink(Test):
             assert output['new'] is False, err_msg
 
     def test_get_exif(self):
-        """Test get_exif method"""
+        """Test get_exif method."""
         with self.app.app_context():
             self.project_fixtures()
             project = Project.query.first()
             project_dict = project.dictize()
-            link = Link(url="http://farm3.staticflickr.com/2870/10074898405_c31af1fc9e_o.jpg",
+            flickr = ("http://farm3.staticflickr.com/2870/"
+                      "10074898405_c31af1fc9e_o.jpg")
+            link = Link(url=flickr,
                         project_id=project_dict['id'])
             link.save()
             pybossa = dict(endpoint='http://localhost:500', api_key='tester')
             get_exif(link.dictize(), project_dict, pybossa, async=False)
-            assert link.exif is not None, "The picture should have some EXIF data"
+            err_msg = "The picture should have some EXIF data"
+            assert link.exif is not None, err_msg
 
             # Now with a picture that does not have EXIF data
-            link = Link(url="http://farm3.staticflickr.com/2870/10074898405_c8336bc52a_s.jpg",
+            flickr = ("http://farm3.staticflickr.com/2870/"
+                      "10074898405_c8336bc52a_s.jpg")
+            link = Link(url=flickr,
                         project_id=project_dict['id'])
             link.save()
             get_exif(link.dictize(), project_dict, pybossa, async=False)
             assert link.exif == "{}", "The picture should not have EXIF data"
 
-
     @patch('pbclient.requests.get')
     @patch('pbclient.requests.post')
     def test_create_pybossa_task(self, MockTask, MockApp):
-        """Test create_pybossa_task method"""
+        """Test create_pybossa_task method."""
         with self.app.app_context():
             self.fixtures()
             pybossa = dict(endpoint='http://localhost:500', api_key='tester')
             short_name = 'algo'
             app = dict(id=1, short_name=short_name)
             task = dict(id=1, app_id=1)
-            MockApp.return_value = PseudoRequest(text=json.dumps([app]), status_code=200, headers={'content-type': 'application-json'})
-            MockTask.return_value = PseudoRequest(text=json.dumps(task), status_code=200, headers={'content-type': 'application-json'})
+            MockApp.return_value = PseudoRequest(text=json.dumps([app]),
+                                                 status_code=200,
+                                                 headers={'content-type':
+                                                          'application-json'})
+            MockTask.return_value = PseudoRequest(text=json.dumps(task),
+                                                  status_code=200,
+                                                  headers={'content-type':
+                                                           'application-json'})
             output = create_pybossa_task(1, short_name, pybossa)
             assert output.id == task['id'], "A task must be created"
 
-            MockApp.return_value = PseudoRequest(text=json.dumps([]), status_code=200, headers={'content-type': 'application-json'})
+            MockApp.return_value = PseudoRequest(text=json.dumps([]),
+                                                 status_code=200,
+                                                 headers={'content-type':
+                                                          'application-json'})
             output = create_pybossa_task(1, short_name, pybossa)
             assert output == "PyBossa App %s not found" % short_name
 
             task_error = dict(action="post", status="failed")
-            MockApp.return_value = PseudoRequest(text=json.dumps([app]), status_code=200, headers={'content-type': 'application-json'})
-            MockTask.return_value = PseudoRequest(text=json.dumps(task_error), status_code=415, headers={'content-type': 'application-json'})
+            MockApp.return_value = PseudoRequest(text=json.dumps([app]),
+                                                 status_code=200,
+                                                 headers={'content-type':
+                                                          'application-json'})
+            MockTask.return_value = PseudoRequest(text=json.dumps(task_error),
+                                                  status_code=415,
+                                                  headers={'content-type':
+                                                           'application-json'})
             output = create_pybossa_task(1, short_name, pybossa)
             assert output['status'] == task_error['status'], output
             assert output['action'] == task_error['action'], output
