@@ -33,13 +33,16 @@ class TestLogic(Test):
 
     def test_handle_error(self):
         """Test handle_error method."""
+        err_arg_missing = ("one or more arguments are missing, "
+                           "required: url, project_slug, uri")
         errors = [('invalid_url', 'Invalid URL', 415),
-                  ('url_missing', 'url arg is missing', 415),
+                  ('url_missing', err_arg_missing, 415),
+                  ('project_slug_missing', err_arg_missing, 415),
+                  ('uri_missing', err_arg_missing, 415),
                   ('too_many_args', 'Too many arguments. '
-                                    'url and project_slug are '
+                                    'url, project_slug and uri are '
                                     'the only allowed arguments', 415),
                   ('rate_limit', 'Rate limit reached', 415),
-                  ('project_slug_missing', 'project_slug arg is missing', 415),
                   ('project_not_found', 'Project not found', 404),
                   ('server_error', 'Server Error', 500),
                   ('unknown', 'Server Error', 500)]
