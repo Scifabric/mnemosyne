@@ -47,7 +47,7 @@ class TestModelLink(Test):
         """Test Link._valid_url() method."""
         err_msg = "URL not validated correctly"
         for u in self.urls:
-            l = Link(u[0], 1)
+            l = Link(u[0], 1, 'http://server.com')
             assert l._valid_url() == u[1], err_msg
 
     @raises(Exception)
