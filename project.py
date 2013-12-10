@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*-
 # This file is part of PyBossa-links.
 #
 # Copyright (C) 2013 Daniel Lombraña González
@@ -14,9 +15,11 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
+"""This is a program to add projects to mnemosyne with the command line."""
 from optparse import OptionParser
-from links.model import Project
-from links.core import db
+from mnemosyne.model.project import Project
+from mnemosyne.model import db
+from mnemosyne.core import create_app
 
 if __name__ == "__main__":
     parser = OptionParser()
@@ -25,7 +28,8 @@ if __name__ == "__main__":
     parser.add_option("-s", "--slug", dest="project_slug",
                       help="project slug NAME", metavar="STRING")
     parser.add_option("-k", "--keywords", dest="project_keywords",
-                      help="project KEYWORDS (comma separated)", metavar="STRING")
+                      help="project KEYWORDS (comma separated)",
+                      metavar="STRING")
     parser.add_option("-p", "--pybossa", dest="pb_app_short_name",
                       help="PyBossa app short_name", metavar="STRING")
 
@@ -43,9 +47,11 @@ if __name__ == "__main__":
     if not options.pb_app_short_name:
         parser.error("you need to specify the PyBossa app short_name")
 
-    project = Project(name=options.project_name,
-                      slug=options.project_slug,
-                      pb_app_short_name=options.pb_app_short_name,
-                      keywords=options.project_keywords.strip())
-    db.session.add(project)
-    db.session.commit()
+    app = create_app()
+    with app.app_context():
+        project = Project(name=options.project_name,
+                          slug=options.project_slug,
+                          pb_app_short_name=options.pb_app_short_name,
+                          keywords=options.project_keywords.strip())
+        db.session.add(project)
+        db.session.commit()
