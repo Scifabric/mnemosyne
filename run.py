@@ -20,3 +20,5 @@ from mnemosyne.core import create_app
 if __name__ == "__main__":  # pragma: no cover
     app = create_app()
     app.run(host=app.config.get('HOST'))
+else:
+    app = create_app()
