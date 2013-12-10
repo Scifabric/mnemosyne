@@ -4,3 +4,4 @@ requests
 exifread
 rq
 pybossa-client
+uwsgi
