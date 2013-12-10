@@ -166,6 +166,7 @@ def create_pybossa_task(link_id, app_short_name, pybossa):
                 link.exif = "{}"
             task_info = dict(id=link.id,
                              url=link.url,
+                             uri=link.uri,
                              project_id=link.project_id,
                              created=link.created.isoformat(),
                              exif=json.loads(link.exif))
