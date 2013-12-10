@@ -103,8 +103,9 @@ class TestLogicLink(Test):
             self.project_fixtures()
             project = Project.query.first()
             pybossa = dict(endpoint='http://pybossa.com', api_key='tester')
-            form = dict(url='http://daniellombrana.es',
-                        project_slug=project.slug)
+            form = dict(url='http://daniellombrana.es/1.jpg',
+                        project_slug=project.slug,
+                        uri='http://daniellombrana.es')
 
             res = save_url(form, pybossa, project, async=False)
             output = json.loads(res.response[0])
