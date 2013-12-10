@@ -41,7 +41,7 @@ def validate_args(form):
     Validate form POST request arguments.
 
     Keyword arguments:
-        form -- the form with fields url and project_slug
+        form -- the form with fields url, project_slug and uri
 
     Return value:
         None -- if arguments are correct
@@ -52,7 +52,9 @@ def validate_args(form):
         return handle_error('url_missing')
     if not form.get('project_slug'):
         return handle_error('project_slug_missing')
-    if len(form.keys()) > 2:
+    if not form.get('uri'):
+        return handle_error('uri_missing')
+    if len(form.keys()) > 3:
         return handle_error('too_many_args')
 
 
@@ -61,7 +63,7 @@ def save_url(form, pybossa, project, async=True):
     Save form POST request, Link, in the web service.
 
     Keyword arguments:
-        form -- url and project_slug fields to save
+        form -- url, project_slug and uri fields to save
         pybossa -- dictionary with PyBossa api_key and endpoint value
         project -- associated Link.project
         async -- Enable/Disable async operation in queues
@@ -70,7 +72,7 @@ def save_url(form, pybossa, project, async=True):
         Flask.Response -- Saved Link object in JSON format
 
     """
-    link = Link(url=form['url'], project_id=project.id)
+    link = Link(url=form['url'], project_id=project.id, uri=form['uri'])
     # We have a valid link, now check if this url has been already reported
     res = Link.query.filter_by(url=link.url).first()
     if res is None:
@@ -78,6 +80,7 @@ def save_url(form, pybossa, project, async=True):
         link.save()
         success = dict(id=link.id,
                        url=link.url,
+                       uri=link.uri,
                        new=True,
                        status=link.status)
         # Enqueue Extraction of EXIF data if not testing
@@ -91,6 +94,7 @@ def save_url(form, pybossa, project, async=True):
         link = res
         success = dict(id=link.id,
                        url=link.url,
+                       uri=link.uri,
                        new=False,
                        status=link.status)
         return Response(json.dumps(success), mimetype="application/json",

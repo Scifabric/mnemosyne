@@ -47,9 +47,10 @@ class Link(db.Model, DomainObject):
     status = db.Column(db.Text)
     pybossa_task_id = db.Column(db.Integer)
 
-    def __init__(self, url, project_id):
+    def __init__(self, url, project_id, uri):
         self.url = url
         self.project_id = project_id
+        self.uri = uri
         self.created = datetime.datetime.utcnow()
 
     def __repr__(self):    # pragma: no cover
