@@ -15,6 +15,7 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with PyBossa-links. If not, see <http://www.gnu.org/licenses/>.
+"""This module creates the Database to start the project."""
 from mnemosyne.models import db
 from mnemosyne.core import create_app
 
