@@ -15,12 +15,22 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with Mnemosyne. If not, see <http://www.gnu.org/licenses/>.
+"""
+Unit tests for model.link package.
+
+This exports:
+    - TestModelLink a class with its unit tests
+
+"""
 from base import Test
 from mnemosyne.model.link import Link
 from nose.tools import raises
 
 
-class TestLogicLink(Test):
+class TestModelLink(Test):
+
+    """Class for testing Link model package."""
+
     urls = [('http:', False),
             ('htt', False),
             ('ftp://example.com/img.jpg', False),
@@ -30,10 +40,11 @@ class TestLogicLink(Test):
             ('data://', False)]
 
     def tearDown(self):
+        """Remove db.session."""
         self.db.session.remove()
 
     def test_00_valid_link_url(self):
-        """Test Link._valid_url() method"""
+        """Test Link._valid_url() method."""
         err_msg = "URL not validated correctly"
         for u in self.urls:
             l = Link(u[0], 1)
@@ -41,7 +52,7 @@ class TestLogicLink(Test):
 
     @raises(Exception)
     def test_01_save(self):
-        """Test Link.save() exception"""
+        """Test Link.save() exception."""
         with self.app.app_context():
             l = Link("ht:pp://wrong.org/1.jpg", 1)
             l.save()
