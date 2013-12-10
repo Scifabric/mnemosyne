@@ -44,21 +44,26 @@ def handle_error(error_type):
     error = dict(status='failed',
                  error='Server Error')
     status_code = 500
+    err_arg_missing = ("one or more arguments are missing, "
+                       "required: url, project_slug, uri")
     if error_type == 'invalid_url':
         error['error'] = 'Invalid URL'
         status_code = 415
     if error_type == 'url_missing':
-        error['error'] = 'url arg is missing'
+        error['error'] = err_arg_missing
+        status_code = 415
+    if error_type == 'uri_missing':
+        error['error'] = err_arg_missing
+        status_code = 415
+    if error_type == 'project_slug_missing':
+        error['error'] = err_arg_missing
         status_code = 415
     if error_type == 'too_many_args':
-        error['error'] = ('Too many arguments. url and project_slug'
+        error['error'] = ('Too many arguments. url, project_slug and uri'
                           ' are the only allowed arguments')
         status_code = 415
     if error_type == 'rate_limit':
         error['error'] = 'Rate limit reached'
-        status_code = 415
-    if error_type == 'project_slug_missing':
-        error['error'] = 'project_slug arg is missing'
         status_code = 415
     if error_type == 'project_not_found':
         error['error'] = 'Project not found'

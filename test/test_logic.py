@@ -35,7 +35,7 @@ class TestLogic(Test):
         """Test handle_error method."""
         errors = [('invalid_url', 'Invalid URL', 415),
                   ('url_missing', 'url arg is missing', 415),
-                  ('too_many_args', 'Too many arguments.'
+                  ('too_many_args', 'Too many arguments. '
                                     'url and project_slug are '
                                     'the only allowed arguments', 415),
                   ('rate_limit', 'Rate limit reached', 415),
