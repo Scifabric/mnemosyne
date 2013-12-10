@@ -2,6 +2,13 @@
 *.un~
 *.swp
 *.wsgi
+*.coverage
+*.noseids
+.ropeproject
+*.ini
+*.conf
+*.swn
+*.swo
 links.db
 settings.py
 env/
