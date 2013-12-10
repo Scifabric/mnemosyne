@@ -57,7 +57,8 @@ class TestLinks(Test):
             self.fixtures()
             project = Project.query.first()
             link = {'url': 'http://new.com/img.jpg',
-                    'project_slug': project.slug}
+                    'project_slug': project.slug,
+                    'uri': 'http://new.com'}
             res = self.tc.post('/', data=link)
             status = json.loads(res.data)
             assert status['status'] == 'saved', status
