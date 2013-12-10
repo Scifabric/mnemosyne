@@ -80,8 +80,9 @@ class Test(object):
         projects = Project.query.all()
         for p in projects:
             for i in range(0, random.randint(1, 10)):
-                url = 'http://%s.com/%s.jpg' % (p.slug, i)
-                self.db.session.add(Link(url, p.id))
+                uri = 'http://%s%s.com' % (p.slug, i)
+                url = '%s/%s.jpg' % (uri, i)
+                self.db.session.add(Link(url, p.id, uri))
         self.db.session.commit()
 
     def fixtures(self):

@@ -128,7 +128,8 @@ class TestLogicLink(Test):
             flickr = ("http://farm3.staticflickr.com/2870/"
                       "10074898405_c31af1fc9e_o.jpg")
             link = Link(url=flickr,
-                        project_id=project_dict['id'])
+                        project_id=project_dict['id'],
+                        uri=flickr)
             link.save()
             pybossa = dict(endpoint='http://localhost:500', api_key='tester')
             get_exif(link.dictize(), project_dict, pybossa, async=False)
@@ -150,7 +151,7 @@ class TestLogicLink(Test):
         """Test create_pybossa_task method."""
         with self.app.app_context():
             self.fixtures()
-            pybossa = dict(endpoint='http://localhost:500', api_key='tester')
+            pybossa = dict(endpoint='http://localhost:5000', api_key='tester')
             short_name = 'algo'
             app = dict(id=1, short_name=short_name)
             task = dict(id=1, app_id=1)
@@ -162,14 +163,16 @@ class TestLogicLink(Test):
                                                   status_code=200,
                                                   headers={'content-type':
                                                            'application-json'})
-            output = create_pybossa_task(1, short_name, pybossa)
+            link = Link.query.first()
+            output = create_pybossa_task(link.id, short_name, pybossa)
             assert output.id == task['id'], "A task must be created"
 
             MockApp.return_value = PseudoRequest(text=json.dumps([]),
                                                  status_code=200,
                                                  headers={'content-type':
                                                           'application-json'})
-            output = create_pybossa_task(1, short_name, pybossa)
+            link = Link.query.first()
+            output = create_pybossa_task(link.id, short_name, pybossa)
             assert output == "PyBossa App %s not found" % short_name
 
             task_error = dict(action="post", status="failed")
@@ -181,6 +184,7 @@ class TestLogicLink(Test):
                                                   status_code=415,
                                                   headers={'content-type':
                                                            'application-json'})
-            output = create_pybossa_task(1, short_name, pybossa)
+            link = Link.query.first()
+            output = create_pybossa_task(link.id, short_name, pybossa)
             assert output['status'] == task_error['status'], output
             assert output['action'] == task_error['action'], output
