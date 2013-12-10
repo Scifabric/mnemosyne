@@ -1,0 +1,11 @@
+[uwsgi]
+module = run
+callable = app
+name = mnemosyne
+project_path = /path/to/folder
+socket = /tmp/%(name).sock
+chmod-socket = 666
+chdir = %(project_path)/%(name)
+pythonpath = ..
+virtualenv = %(project_path)/%(name)/env
+stats = /tmp/%(name)-stats.sock
