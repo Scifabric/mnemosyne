@@ -40,6 +40,7 @@ class Link(db.Model, DomainObject):
 
     id = db.Column(db.Integer, primary_key=True)
     url = db.Column(db.Text, unique=True)
+    uri = db.Column(db.Text)
     project_id = db.Column(db.Integer, db.ForeignKey('project.id'))
     created = db.Column(db.DateTime)
     exif = db.Column(db.Text)
