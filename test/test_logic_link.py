@@ -140,7 +140,8 @@ class TestLogicLink(Test):
             flickr = ("http://farm3.staticflickr.com/2870/"
                       "10074898405_c8336bc52a_s.jpg")
             link = Link(url=flickr,
-                        project_id=project_dict['id'])
+                        project_id=project_dict['id'],
+                        uri=flickr)
             link.save()
             get_exif(link.dictize(), project_dict, pybossa, async=False)
             assert link.exif == "{}", "The picture should not have EXIF data"
