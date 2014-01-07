@@ -5,7 +5,8 @@ an image URL as a PyBossa task. This micro-service is very similar to popular si
 like bit.ly or delicious.com.
 
 The main difference is that there is **no authentication to save URLs**, as
-the goal of the application is to interact with a web browser addon that
+the goal of the application is to interact with a web [browser
+addon](https://github.com/PyBossa/mnemosyne-addon) that
 will send the URL to analyze it in a later stage at a PyBossa server
 application. In other words, the purpose of this web service is to allow
 anonymous contributions to create PyBossa tasks using a Firefox extension.
