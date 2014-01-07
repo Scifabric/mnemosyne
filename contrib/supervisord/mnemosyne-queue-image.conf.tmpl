@@ -1,0 +1,8 @@
+[program:mnemosyne-queue-image]
+user=user
+directory=/home/user/mnemosyne
+environment=PATH="/home/user/mnemosyne/env"
+command=/home/mnemosyne/user/env/bin/rqworker image
+identifier=mnemosyne-queue-image
+autostart=true
+autorestart=true

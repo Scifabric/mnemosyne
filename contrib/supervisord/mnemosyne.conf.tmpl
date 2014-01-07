@@ -1,0 +1,7 @@
+[program:mnemosyne]
+user=user
+directory=/home/user/mnemosyne
+command=/home/user/mnemosyne/env/bin/uwsgi contrib/uwsgi/mnemosyne.ini
+identifier=mnemosyne-web
+autostart=true
+autorestart=true
