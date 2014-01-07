@@ -174,17 +174,22 @@ This section explains how you can install the service in an Ubuntu machine.
 
 Install the following packages:
 
- $ sudo apt-get install apache2 libapache2-mod-wsgi
+```bash
+    $ sudo apt-get install apache2 libapache2-mod-wsgi
+```
 
 After installing the softwre, you have to enable the mod-wsgi library and
 restart the web server:
 
- $ sudo a2enmod wsgi
- $ sudo service apache2 restart
+```bash
+    $ sudo a2enmod wsgi
+    $ sudo service apache2 restart
+```
 
 Now you have to create a virtual host for hosting the micro-service. In the
 **contrib/apache2** folder you can find a template that you can re-use:
 
+```
  <VirtualHost *:80>
     ServerName example.com
 
@@ -199,6 +204,7 @@ Now you have to create a virtual host for hosting the micro-service. In the
         Allow from all
     </Directory>
  </VirtualHost>
+```
 
 You can specify a user and group from your machine with lower privileges in order to 
 improve the security of the site. You can also use the www-data user and group name.
@@ -209,11 +215,15 @@ Once you have adapted the PATH in that file, copy it into the folder:
 
 Enable the site:
 
- $ sudo a2ensite Mnemosyne
+```bash
+    $ sudo a2ensite mnemosyne
+```
 
 And restart the server:
 
- $ sudo service apache2 restart
+```bash
+    $ sudo service apache2 restart
+```
 
 The last step is to configure the queues for processing the links. In order to
 do it, check the Nginx solution as it explains how you can do it.
