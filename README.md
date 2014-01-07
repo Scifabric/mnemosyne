@@ -140,10 +140,10 @@ automatically (you can also use init.d scripts, it is up to you).
 
 In the folder **contrib/supervisord** you will find three templates:
 
- # **mnemosyne.conf**: for the main web service
- # **mnemosyne-queue-image.conf**: for the Python RQ worker listening in the
+ * **mnemosyne.conf**: for the main web service
+ * **mnemosyne-queue-image.conf**: for the Python RQ worker listening in the
  image queue.
- # **mnemosyne-queue-pybossa.conf**: for the Python RQ worker listening in the
+ * **mnemosyne-queue-pybossa.conf**: for the Python RQ worker listening in the
  pybossa queue.
 
 Copy them to **/etc/supervisor/conf.d/** folder (*note*: this varies from
