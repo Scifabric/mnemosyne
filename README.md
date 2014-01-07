@@ -1,14 +1,17 @@
 # Mnemosyne: a micro service to save links as PyBossa tasks
 
 This micro-service is a very simple Flask application that allows you to save
-a URL as a PyBossa task. This micro-service is very similar to popular sites
+an image URL as a PyBossa task. This micro-service is very similar to popular sites
 like bit.ly or delicious.com.
 
 The main difference is that there is **no authentication to save URLs**, as
-the goal of the application is to interact with a web browser extension that
+the goal of the application is to interact with a web browser addon that
 will send the URL to analyze it in a later stage at a PyBossa server
 application. In other words, the purpose of this web service is to allow
 anonymous contributions to create PyBossa tasks using a Firefox extension.
+
+Furthermore, Mnemosyne can be configured to host different projects and save
+the URLs according to a project. Projects act like folders for saved links.
 
 The service saves the URL, and in case the URL is already in the system, it
 returns the same object but with the field **new** equal to False.
@@ -28,8 +31,31 @@ installed, as the next section will compile some software in order to work.
 
 It is very simple, create a virtualenv and then, install the requirements:
 
+ $ cd pathapplication
+ $ source env/bin/activate
  $ pip install -r requirements.txt
 
+Now you have to init the DB:
+
+```bash
+    $ python create_db.py
+```
+
+That command should create a file named **links.db** in the mnemosyne folder.
+Check it is there, before continuing. 
+
+Finally, you have to add a project to Mnemosyne in order to allow users to
+submit links for a given project using the [Firefox
+addon](https://github.com/PyBossa/mnemosyne-addon):
+
+```bash
+    $ python project.py -n "Example project" -s "exampleproject" -k "keyword1,
+    keyword2, keyword3, ..., keywordN" -p pybossa_app_short_name
+```
+
+The project will be created, and you will be able to see it with a Sqlite
+browser or using the web service. We recommend to use [sqlitebrowser](http://sqlitebrowser.sourceforge.net/) 
+as it is very simple and easy to use.
 
 # Configuring the micro-service
 
