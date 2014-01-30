@@ -47,7 +47,7 @@ class Project(db.Model, DomainObject):
     created = db.Column(db.DateTime)
 
     # Relations: one to many
-    links = db.relationship('Link', backref='project', lazy='dynamic')
+    links = db.relationship('Link', cascade="all, delete", backref='project', lazy='dynamic')
 
     def __init__(self, name, slug, pb_app_short_name, keywords):
         self.name = name
