@@ -42,6 +42,9 @@ Now you have to init the DB:
     $ python create_db.py
 ```
 
+**NOTE**: be sure that the DB is created with the same user that will be
+running the service, otherwise it will not work.
+
 That command should create a file named **links.db** in the mnemosyne folder.
 Check it is there, before continuing. 
 
