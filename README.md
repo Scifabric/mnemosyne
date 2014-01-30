@@ -61,6 +61,13 @@ The project will be created, and you will be able to see it with a Sqlite
 browser or using the web service. We recommend to use [sqlitebrowser](http://sqlitebrowser.sourceforge.net/) 
 as it is very simple and easy to use.
 
+If you want to delete a project and its associated links, all you have to do is
+the following:
+
+```bash
+    $ python delete_project.py -s "slugname"
+```
+
 # Configuring the micro-service
 
 The software comes with a settings.py.tmpl file, in the **links** folder, with a 
