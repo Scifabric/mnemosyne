@@ -68,6 +68,22 @@ the following:
     $ python delete_project.py -s "slugname"
 ```
 
+# Upgrading
+
+If you need to upgrade the code, all you have to do is to get the changes from
+the official repository:
+
+```bash
+    $ cd mnemosynefolder
+    $ git fetch
+    $ git pull origin master
+```
+
+Basically, access the folder where you have the source code, fetch the changes
+and apply them. This will allow you to get all the changes easily. After
+running those commands, it is recommend to restart all the services: web server
+and queues.
+
 # Configuring the micro-service
 
 The software comes with a settings.py.tmpl file, in the **links** folder, with a 
