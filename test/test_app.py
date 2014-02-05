@@ -23,7 +23,8 @@ This exports:
 
 """
 import json
-from base import Test
+from base import Test, PseudoRequest
+from mock import patch
 from mnemosyne.model.link import Link
 from mnemosyne.model.project import Project
 
@@ -51,8 +52,21 @@ class TestLinks(Test):
                        % (n_links, n_projects))
             assert msg == res.data, err_msg
 
-    def test_POST_index(self):
+    @patch('requests.get')
+    def test_POST_index(self, MockTask):
         """Test POST INDEX web page."""
+        task_not_found = dict(status="failed",
+                              action="GET",
+                              target="task",
+                              exception_msg="",
+                              status_code=404,
+                              exception_cls="NotFound")
+        task = dict(id=1, app_id=1)
+
+        MockTask.return_value = PseudoRequest(text=json.dumps(task_not_found),
+                                              status_code=404,
+                                              headers={'content-type':
+                                                       'application-json'})
         with self.app.app_context():
             self.fixtures()
             project = Project.query.first()
@@ -65,14 +79,25 @@ class TestLinks(Test):
             assert status['new'] is True, status
             assert status['id'] is not None, status
 
+            # Update the link with the PyBossa task ID
+            tmp = self.db.session.query(Link).get(status['id'])
+            tmp.pybossa_task_id = 1
+            self.db.session.add(tmp)
+            self.db.session.commit()
+
             # If the same link is reported posted twice:
+            MockTask.return_value = PseudoRequest(text=json.dumps(task),
+                                                  status_code=200,
+                                                  headers={'content-type':
+                                                           'application-json'})
             res = self.tc.post('/', data=link)
             status = json.loads(res.data)
             assert status['status'] == 'saved', status
             assert status['new'] is False, status
             assert status['id'] is not None, status
 
-    def test_GET_project(self):
+    @patch('requests.get')
+    def test_GET_project(self, Mock):
         """Test GET PROJECT web page."""
         # Empty DB
         with self.app.app_context():

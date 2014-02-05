@@ -97,8 +97,83 @@ class TestLogicLink(Test):
         err = 'one or more arguments are missing, required: url, project_slug, uri'
         assert output['error'] == err, output
 
-    def test_save_url(self):
-        """Test save_url method."""
+    @patch('requests.get')
+    def test_save_url(self, MockTask):
+        """Test save_url method works for first time."""
+        task_not_found = dict(status="failed",
+                              action="GET",
+                              target="task",
+                              exception_msg="",
+                              status_code=404,
+                              exception_cls="NotFound")
+        task = dict(id=1, app_id=1)
+
+        MockTask.return_value = PseudoRequest(text=json.dumps(task_not_found),
+                                              status_code=404,
+                                              headers={'content-type':
+                                                       'application-json'})
+        with self.app.app_context():
+            self.project_fixtures()
+            project = Project.query.first()
+            pybossa = dict(endpoint='http://pybossa.com', api_key='tester')
+            form = dict(url='http://daniellombrana.es/1.jpg',
+                        project_slug=project.slug,
+                        uri='http://daniellombrana.es')
+
+            res = save_url(form, pybossa, project, async=False)
+            output = json.loads(res.response[0])
+            err_msg = "URL should be saved"
+            assert output['status'] == 'saved', err_msg
+            assert output['new'] is True, err_msg
+
+            # Update the link with the PyBossa task ID
+            tmp = self.db.session.query(Link).get(1)
+            tmp.pybossa_task_id = 1
+            self.db.session.add(tmp)
+            self.db.session.commit()
+
+            # The same URL should be not saved, but reported as saved
+            MockTask.return_value = PseudoRequest(text=json.dumps(task),
+                                                  status_code=200,
+                                                  headers={'content-type':
+                                                           'application-json'})
+            res = save_url(form, pybossa, project, async=False)
+            output = json.loads(res.response[0])
+            err_msg = "URL.new should be False"
+            assert output['status'] == 'saved', err_msg
+            assert output['new'] is False, err_msg
+
+            # The same URL but deleted in PyBossa
+            MockTask.return_value = PseudoRequest(text=json.dumps(task_not_found),
+                                                  status_code=404,
+                                                  headers={'content-type':
+                                                           'application-json'})
+            res = save_url(form, pybossa, project, async=False)
+            output = json.loads(res.response[0])
+            err_msg = "URL.new should be True"
+            assert output['status'] == 'saved', err_msg
+            assert output['new'] is True, err_msg
+
+            # The same URL but with a different PyBossa Task ID
+            task['id'] = 2
+            MockTask.return_value = PseudoRequest(text=json.dumps(task),
+                                                  status_code=200,
+                                                  headers={'content-type':
+                                                           'application-json'})
+            res = save_url(form, pybossa, project, async=False)
+            output = json.loads(res.response[0])
+            err_msg = "URL.new should be True"
+            assert output['status'] == 'saved', err_msg
+            assert output['new'] is True, err_msg
+
+    @patch('requests.get')
+    def test_save_url_with_task_not_found(self, MockTask):
+        """Test save_url method works for first time."""
+        task = dict(id=1, app_id=1)
+        MockTask.return_value = PseudoRequest(text=json.dumps(task),
+                                              status_code=200,
+                                              headers={'content-type':
+                                                       'application-json'})
         with self.app.app_context():
             self.project_fixtures()
             project = Project.query.first()
@@ -119,6 +194,7 @@ class TestLogicLink(Test):
             err_msg = "URL.new should be False"
             assert output['status'] == 'saved', err_msg
             assert output['new'] is False, err_msg
+
 
     def test_get_exif(self):
         """Test get_exif method."""
