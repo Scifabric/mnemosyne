@@ -166,36 +166,6 @@ class TestLogicLink(Test):
             assert output['status'] == 'saved', err_msg
             assert output['new'] is True, err_msg
 
-    @patch('requests.get')
-    def test_save_url_with_task_not_found(self, MockTask):
-        """Test save_url method works for first time."""
-        task = dict(id=1, app_id=1)
-        MockTask.return_value = PseudoRequest(text=json.dumps(task),
-                                              status_code=200,
-                                              headers={'content-type':
-                                                       'application-json'})
-        with self.app.app_context():
-            self.project_fixtures()
-            project = Project.query.first()
-            pybossa = dict(endpoint='http://pybossa.com', api_key='tester')
-            form = dict(url='http://daniellombrana.es/1.jpg',
-                        project_slug=project.slug,
-                        uri='http://daniellombrana.es')
-
-            res = save_url(form, pybossa, project, async=False)
-            output = json.loads(res.response[0])
-            err_msg = "URL should be saved"
-            assert output['status'] == 'saved', err_msg
-            assert output['new'] is True, err_msg
-
-            # The same URL should be not saved, but reported as saved
-            res = save_url(form, pybossa, project, async=False)
-            output = json.loads(res.response[0])
-            err_msg = "URL.new should be False"
-            assert output['status'] == 'saved', err_msg
-            assert output['new'] is False, err_msg
-
-
     def test_get_exif(self):
         """Test get_exif method."""
         with self.app.app_context():
