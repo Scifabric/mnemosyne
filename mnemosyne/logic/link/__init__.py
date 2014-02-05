@@ -92,11 +92,33 @@ def save_url(form, pybossa, project, async=True):
                         status=200)
     else:
         link = res
+        endpoint = "%s/api/task/%s" % (pybossa.get('endpoint'),
+                                       link.pybossa_task_id)
+        res = requests.get(endpoint)
+        # Check if the associate task exists
+        new = False
+        if (res.status_code == 200):
+            tmp = res.json()
+            if tmp['id'] == link.pybossa_task_id:
+                new = False
+            else:
+                new = False
+        # Else treat it as new link again
+        else:
+            link.status = "saved"
+            link.save()
+            new = True
         success = dict(id=link.id,
                        url=link.url,
                        uri=link.uri,
-                       new=False,
+                       new=new,
                        status=link.status)
+
+        # Enqueue creating of task in PyBossa if not testing
+        if async and new:
+            q_pybossa.enqueue('mnemosyne.logic.link.create_pybossa_task',
+                              link.id, link.project.pb_app_short_name,
+                              pybossa)
         return Response(json.dumps(success), mimetype="application/json",
                         status=200)
 
