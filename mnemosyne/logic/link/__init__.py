@@ -98,11 +98,11 @@ def save_url(form, pybossa, project, async=True):
         # Check if the associate task exists
         new = False
         if (res.status_code == 200):
-            tmp = res.json()
+            tmp = json.loads(res.text)
             if tmp['id'] == link.pybossa_task_id:
                 new = False
             else:
-                new = False
+                new = True
         # Else treat it as new link again
         else:
             link.status = "saved"
@@ -115,7 +115,7 @@ def save_url(form, pybossa, project, async=True):
                        status=link.status)
 
         # Enqueue creating of task in PyBossa if not testing
-        if async and new:
+        if async and new: # pragma: no cover
             q_pybossa.enqueue('mnemosyne.logic.link.create_pybossa_task',
                               link.id, link.project.pb_app_short_name,
                               pybossa)
