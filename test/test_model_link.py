@@ -54,5 +54,5 @@ class TestModelLink(Test):
     def test_01_save(self):
         """Test Link.save() exception."""
         with self.app.app_context():
-            l = Link("ht:pp://wrong.org/1.jpg", 1)
+            l = Link("ht:pp://wrong.org/1.jpg", 1, 'http:/srv.com')
             l.save()
