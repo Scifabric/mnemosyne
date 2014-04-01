@@ -1,5 +1,7 @@
 # Mnemosyne: a micro service to save links as PyBossa tasks
 
+[![Travis CI](https://travis-ci.org/PyBossa/mnemosyne.png?branch=master)](https://travis-ci.org/#!/PyBossa/mnemosyne) 
+
 This micro-service is a very simple Flask application that allows you to save
 an image URL as a PyBossa task. This micro-service is very similar to popular sites
 like bit.ly or delicious.com.
