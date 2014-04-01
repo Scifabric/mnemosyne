@@ -25,7 +25,10 @@ This exports:
 from flask import Flask
 from mnemosyne.frontend import frontend
 from mnemosyne.model import db
-import mnemosyne.settings as settings
+try:
+    import mnemosyne.settings as settings
+except:
+    print "Settings file is missing"
 
 
 def create_app(db_name=None, testing=False):
@@ -40,8 +43,12 @@ def create_app(db_name=None, testing=False):
         app -- Flask application object
 
     """
-    app = Flask(__name__)
-    app.config.from_object(settings)
+    try:
+        app = Flask(__name__)
+        app.config.from_object(settings)
+    except:
+        print "Settings file is missing, trying with env config..."
+        app.config.from_envvar('MNEMOSYNE_SETTINGS', silent=False)
 
     if db_name:
         app.config['SQLALCHEMY_DATABASE_URI'] = db_name
