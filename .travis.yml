@@ -1,6 +1,8 @@
 language: python
 env:
     - MNEMOSYNE_SETTINGS='settings_test.py'
+services:
+    - redis-server
 python:
   - "2.7"
 before_install:
